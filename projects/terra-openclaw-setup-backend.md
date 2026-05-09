@@ -12,10 +12,13 @@ It does not modify that repository by itself.
 
 Before Terra repository work, read:
 
+- `$terra-onboarding` (`/home/ZykLyj/.agents/skills/terra-onboarding/SKILL.md`) as the project bootstrap when available.
 - `docs/ai-collaboration/` all `.md` files
 - `docs/AI-ONBOARDING.md`
 - `docs/INDEX.md`
 - task-relevant topic docs
+
+`$terra-onboarding` is a project-level bootstrap helper. It lists mandatory entry docs, linked candidates, and task-specific route hypotheses, but it does not replace current repo facts, command output, tests, Personal Agent OS HITL rules, or data-source boundaries.
 
 For provider/model-config work, also follow the docs index into:
 
@@ -45,7 +48,7 @@ Intake -> Planner -> PRD -> Issues -> Triage -> Builder -> Reviewer
 Useful local skill flow:
 
 ```text
-grill-with-docs -> to-prd -> to-issues -> triage -> tdd
+terra-onboarding -> grill-with-docs -> to-prd -> to-issues -> triage -> tdd
 ```
 
 Bug or incident:
