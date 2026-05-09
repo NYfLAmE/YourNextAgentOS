@@ -21,6 +21,7 @@ The private report archive lives in:
 - [Self improvement](workflows/self-improvement.md): feedback ingestion and low-risk automatic workflow refinement.
 - [Data source whitelist](data-sources/whitelist.md): only listed sources may be used as report facts.
 - [Terra adapter](projects/terra-openclaw-setup-backend.md): project-specific workflow rules for `TerraOpenclawSetupBackend`.
+- [Managed user skills](skills/README.md): Git-managed local user skills exposed through `/home/ZykLyj/.agents/skills`.
 - [V2 automation backlog](backlog/v2-automation.md): cron, email, connector, and automation work intentionally out of V1.
 
 ## V1 Boundaries
