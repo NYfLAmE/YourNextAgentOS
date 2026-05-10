@@ -12,9 +12,17 @@ _Avoid_: AgentOS, YourNextAgentOS, generic agent framework
 The future resident execution layer that observes the **Control Plane** and performs allowed automation under Personal Agent OS policy.
 _Avoid_: standalone product, replacement OS, separate agent framework
 
+**paos**:
+The command-line and daemon entrypoint for the **Personal Agent OS Runtime**.
+_Avoid_: agentos-runtime, standalone agent product, generic automation CLI
+
 **Control Plane**:
 The Git-backed Markdown files, templates, workflow state, and approval records that form the authoritative source for Personal Agent OS policy and coordination.
 _Avoid_: knowledge base, documentation-only handbook, database
+
+**Runtime Task**:
+A Control Plane artifact that asks the **Personal Agent OS Runtime** to execute approved command templates for a parent Issue or Plan.
+_Avoid_: issue replacement, natural-language shell request, hidden daemon job
 
 **Workflow State**:
 Human-editable frontmatter or Markdown status that represents where a durable artifact is in an approved workflow.
@@ -52,6 +60,10 @@ _Avoid_: main working tree, global project permission, user home directory
 An approved shell command shape whose structure is fixed and whose parameters are constrained by the task plan.
 _Avoid_: arbitrary shell access, one-off untracked command, command family
 
+**Command List**:
+The explicit set of **Command Templates** that a **Runtime Task** is allowed to execute after approval.
+_Avoid_: natural-language execution plan, implied commands, open shell session
+
 **Env Profile**:
 A task-scoped declaration of environment variables and value sources that may be injected into Runtime execution.
 _Avoid_: inherited shell environment, global token store, implicit credentials
@@ -67,13 +79,15 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 ## Relationships
 
 - **Personal Agent OS** defines policy and language for one **Personal Agent OS Runtime**
+- **paos** is the local CLI and daemon entrypoint for the **Personal Agent OS Runtime**
 - **Personal Agent OS Runtime** observes **Control Plane Events**
+- **Runtime Tasks** belong to a parent Issue or Plan
 - **Control Plane** contains **Workflow State** and **Approval Records**
 - **Runtime Log** records execution history but does not override **Workflow State**
 - **Plan-Approved Autonomy** is granted by an **Approval Record**
 - **Core Tools** are available before **Fat Agent Extension Points**
 - **Execution Workspaces** bound the file impact of approved command execution
-- **Command Templates** and **Env Profiles** are approved at task scope
+- **Command Lists**, **Command Templates**, and **Env Profiles** are approved at task scope
 - **Private Runtime Logs** record execution history outside the **Control Plane**
 
 ## Example dialogue
@@ -84,9 +98,13 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 > **Dev:** "Can this task run the same test command several times?"
 > **Domain expert:** "Yes, if the plan approved that **Command Template** inside the task **Execution Workspace**."
 
+> **Dev:** "Can this ready issue be executed by the Runtime?"
+> **Domain expert:** "Only after `paos` or a human creates a **Runtime Task** with an explicit **Command List** and an **Approval Record**."
+
 ## Flagged ambiguities
 
 - "Agent OS", "AgentOS", and "YourNextAgentOS" were used to mean both the handbook and the automation layer; resolved: **Personal Agent OS** is the handbook and **Personal Agent OS Runtime** is its future execution layer.
 - "Markdown docs" was used to mean passive documentation; resolved: Git-backed Markdown in this repository is the **Control Plane** when it carries policy, workflow state, or approval records.
 - "Approval" was used to mean both transient chat confirmation and durable permission; resolved: only an **Approval Record** is authoritative for Runtime execution.
 - "Shell approval" was used to mean both arbitrary command access and repeatable task commands; resolved: repeatable execution approves a constrained **Command Template**, not unrestricted shell access.
+- "Runtime Task" was considered as a possible Issue replacement; resolved: a **Runtime Task** is an execution request for a parent Issue or Plan, not a replacement for engineering delivery artifacts.

@@ -4,6 +4,8 @@ V1 defines the workflow. V2 implements automation.
 
 Before writing Runtime PRDs or implementation plans, read the [domain context](../CONTEXT.md) and [architecture decisions](../docs/adr/). Runtime work must preserve the Git-backed Markdown Control Plane, task-scoped approvals, explicit data-source whitelist, and local Control Plane events as the first automation surface.
 
+First Runtime slice: [Personal Agent OS Runtime v1 controlled execution loop](../.scratch/personal-agent-os-runtime-v1/PRD.md).
+
 ## Email Sending
 
 Goal:
