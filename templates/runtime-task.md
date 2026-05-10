@@ -25,6 +25,10 @@ Link to the parent Issue or Plan. A Runtime Task is an execution request and doe
 
 What approved task outcome should this execution support?
 
+## Context Pack
+
+List `source_refs` context included or excluded by `paos draft`. Persist metadata only: path, status, source field, byte count, truncation state, and reason. Do not copy included file contents into the Git-backed Control Plane.
+
 ## Execution Spec
 
 ```yaml

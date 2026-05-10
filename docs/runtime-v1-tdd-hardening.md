@@ -34,6 +34,9 @@ Tests should protect observable Runtime behavior through `paos` CLI entrypoints 
 | `paos draft` refuses parents outside `.scratch/<feature>` before LLM calls. | `TestCreateDraftRuntimeTaskRefusesParentOutsideScratchBeforeLLMCall` |
 | Default LLM Payload excludes project source files. | `TestRunCLIDraftCreatesTaskWithoutProjectSourcePayload` |
 | Repair payload includes failed task result text and log refs, not Private Runtime Log contents. | `TestRepairPayloadExcludesPrivateLogContents` |
+| `paos draft` expands explicit frontmatter `source_refs` into LLM Payload context while persisting only Context Pack metadata in the Runtime Task Draft. | `TestCreateDraftRuntimeTaskIncludesSourceRefsContextPack`, `TestCreateDraftRuntimeTaskAllowsExplicitAbsoluteSourceRef` |
+| `paos draft` rejects sensitive or unsafe `source_refs` before their contents enter the LLM Payload. | `TestCreateDraftRuntimeTaskExcludesSensitiveSourceRefs`, `TestCreateDraftRuntimeTaskExcludesBinarySourceRef`, `TestCreateDraftRuntimeTaskExcludesExternalURLSourceRef` |
+| `paos draft` caps included `source_refs` content at 64KB per file and records truncation in the Draft metadata. | `TestCreateDraftRuntimeTaskTruncatesLargeSourceRef` |
 | LLM output must be strict JSON and schema-valid. | `TestParseDraftResponseRejectsMalformedOutput`, `TestOpenAICompatibleClientParsesStrictStructuredOutput` |
 | `paos approve` creates an Approval Record and moves the Runtime Task to `ready`. | `TestApproveRuntimeTaskCreatesRecordAndMarksReady` |
 | `paos approve` rejects incomplete execution boundaries. | `TestApproveRuntimeTaskRejectsMissingCommandList` |

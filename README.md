@@ -38,7 +38,7 @@ Supported commands:
 
 - `paos scan`: read-only Control Plane reconciliation for `.scratch/**.md`.
 - `paos status`: config discovery plus Runtime Task state summary without printing secret values.
-- `paos draft <parent>`: LLM Drafting from a ready Issue, approved Plan, or failed Runtime Task into a draft Runtime Task.
+- `paos draft <parent>`: LLM Drafting from a ready Issue, approved Plan, or failed Runtime Task into a draft Runtime Task; explicit frontmatter `source_refs` are resolved into a bounded Context Pack for review.
 - `paos approve <task>`: durable Approval Record creation and transition to `ready`.
 - `paos run <task>`: approved Command List execution inside a dedicated Git worktree with Private Runtime Logs outside Git.
 - `paos watch`: local polling watcher that reports state and does not call LLM, approve, or run by itself.

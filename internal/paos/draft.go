@@ -23,6 +23,7 @@ func BuildLLMPayload(root, parentPath string) (LLMPayload, error) {
 		ApprovalState:  fieldString(doc.Fields, "approval_state"),
 		ParentRefs:     fieldStringSlice(doc.Fields, "parent_refs"),
 		ApprovalRefs:   fieldStringSlice(doc.Fields, "approval_refs"),
+		SourceRefs:     fieldStringSlice(doc.Fields, "source_refs"),
 		RuntimeLogRefs: fieldStringSlice(doc.Fields, "runtime_log_refs"),
 	}
 	mode := "parent"
@@ -46,6 +47,7 @@ func BuildLLMPayload(root, parentPath string) (LLMPayload, error) {
 		ParentPath:        artifact.RelPath,
 		ParentArtifact:    artifact,
 		ParentBody:        doc.Body,
+		ContextPack:       ResolveSourceRefs(parentPath, artifact.SourceRefs),
 		ContextSummary:    contextSummary,
 		ADRSummaries:      adrSummaries,
 		RuntimeTaskTmpl:   readOptional(filepath.Join(root, "templates", "runtime-task.md"), 5000),
@@ -117,7 +119,7 @@ func WriteDraftRuntimeTask(root, parentPath string, payload LLMPayload, draft Dr
 		"feedback_source":     nil,
 		"target_artifact":     nil,
 	}
-	body := renderRuntimeTaskBody(draft, specYAML, parentRel, payload.Mode)
+	body := renderRuntimeTaskBody(draft, specYAML, parentRel, payload.Mode, payload.ContextPack)
 	doc := Document{Path: target, Fields: fields, Body: body}
 	if err := WriteDocument(doc); err != nil {
 		return "", err
@@ -125,7 +127,7 @@ func WriteDraftRuntimeTask(root, parentPath string, payload LLMPayload, draft Dr
 	return target, nil
 }
 
-func renderRuntimeTaskBody(draft DraftResponse, specYAML, parentRel, mode string) string {
+func renderRuntimeTaskBody(draft DraftResponse, specYAML, parentRel, mode string, contextPack []ContextPackItem) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Runtime Task: %s\n\n", draft.Title)
 	b.WriteString("## Parent\n\n")
@@ -133,6 +135,15 @@ func renderRuntimeTaskBody(draft DraftResponse, specYAML, parentRel, mode string
 	b.WriteString("This Runtime Task is an execution request and does not replace the parent artifact.\n\n")
 	b.WriteString("## Goal\n\n")
 	b.WriteString(strings.TrimSpace(draft.Goal) + "\n\n")
+	b.WriteString("## Context Pack\n\n")
+	if len(contextPack) == 0 {
+		b.WriteString("No `source_refs` context was included.\n\n")
+	} else {
+		for _, item := range contextPack {
+			fmt.Fprintf(&b, "- `%s` status=%s source=%s bytes=%d truncated=%t reason=%q\n", item.Path, item.Status, item.Source, item.Bytes, item.Truncated, item.Reason)
+		}
+		b.WriteString("\n")
+	}
 	b.WriteString("## Execution Spec\n\n")
 	b.WriteString("```yaml\n")
 	b.WriteString(specYAML)

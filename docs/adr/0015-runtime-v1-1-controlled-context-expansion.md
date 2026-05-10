@@ -6,10 +6,12 @@ Runtime v1 already proves a bounded loop: discover Control Plane artifacts, draf
 
 Runtime v1.1 will add controlled context expansion for LLM Drafting through two bounded inputs:
 
-- `source_refs` resolver: reads explicit references from the parent Issue, Plan, PRD, or failed Runtime Task and resolves only allowed repo-local paths.
+- `source_refs` resolver: reads explicit frontmatter references from the parent Issue, Plan, PRD, or failed Runtime Task. Relative paths resolve from the parent artifact directory; absolute paths are allowed only when explicitly listed in `source_refs`.
 - project adapter context pack: adds project-specific workflow and reading rules, such as the Terra/OpenClaw adapter and `$terra-onboarding`, without treating adapter output as a substitute for current files, tests, or command output.
 
-The expanded LLM Payload must record what was included, what was excluded, and why. It must not read Private Runtime Logs, private config, credentials, unapproved external data sources, or arbitrary project source trees by default.
+The expanded LLM Payload must record what was included, what was excluded, and why. Included `source_refs` file content is capped at 64KB per file with no global total limit in v1.1. Runtime Task Drafts persist only Context Pack metadata, not copied file contents. The resolver must not read Private Runtime Logs, PAOS private config, `.git` internals, credential-shaped files, unapproved external URLs, or binary/non-UTF-8 files.
+
+Plain `source_refs` are not credential-reading authorization. Any future support for credential-shaped files requires a separate high-risk ADR and approval contract.
 
 Runtime v1.1 will also make Runtime Task Drafts TDD-aware. A draft for implementation work must include RED, GREEN, and REFACTOR/validation intent, but the model still produces a reviewable draft only. TDD is an execution requirement for subsequent Builder work, not a suggestion.
 
@@ -21,6 +23,7 @@ Runtime v1.1 does not introduce unattended Builder automation. Any code, config,
 
 - LLM Drafting can become more useful without silently exporting whole repositories or private runtime data.
 - `source_refs` become operational evidence inputs rather than decorative metadata.
+- Absolute paths can be used for explicitly cited local evidence, but their full paths are written into Runtime Task Draft Context Pack metadata for review.
 - Project adapters define mandatory reading and policy context, but current repo files, code, tests, and command output remain the fact boundary.
 - Runtime Task Draft schema and templates need room for context-pack evidence and TDD steps.
 - Watcher behavior stays compatible with current v1 tests that assert `watch --once` does not call the LLM or write files.

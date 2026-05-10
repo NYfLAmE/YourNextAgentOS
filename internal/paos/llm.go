@@ -149,6 +149,20 @@ func renderLLMPayload(payload LLMPayload) string {
 	b.WriteString(`{"title":"...","goal":"...","execution_spec":{"execution_workspace":{"repo":"...","mode":"dedicated_worktree","worktree_root":"private_runtime_config"},"command_list":[{"id":"...","command":"...","allowed_args":{},"repeatable":true}],"env_profile":{"mode":"empty","allow":[]},"network_intent":{"enabled":true,"reason":"..."},"private_runtime_log":{"storage":"private_runtime_directory","retention":"long_term","redaction":"none"}},"risks":[],"source_refs":[],"comments":[]}`)
 	b.WriteString("\n\nParent Control Plane text:\n")
 	b.WriteString(payload.ParentBody)
+	if len(payload.ContextPack) > 0 {
+		b.WriteString("\n\nContext pack from frontmatter source_refs:\n")
+		for _, item := range payload.ContextPack {
+			fmt.Fprintf(&b, "\n### %s\n", item.Path)
+			fmt.Fprintf(&b, "status: %s\nsource: %s\nbytes: %d\ntruncated: %t\nreason: %s\n", item.Status, item.Source, item.Bytes, item.Truncated, item.Reason)
+			if item.Status == "included" {
+				b.WriteString("content:\n")
+				b.WriteString(item.Content)
+				if !strings.HasSuffix(item.Content, "\n") {
+					b.WriteString("\n")
+				}
+			}
+		}
+	}
 	b.WriteString("\n\nDomain context summary:\n")
 	b.WriteString(payload.ContextSummary)
 	b.WriteString("\n\nADR summaries:\n")

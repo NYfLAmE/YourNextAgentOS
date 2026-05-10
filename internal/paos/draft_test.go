@@ -57,6 +57,237 @@ Run documentation checks.
 	}
 }
 
+func TestCreateDraftRuntimeTaskIncludesSourceRefsContextPack(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "CONTEXT.md", "# Context\n")
+	writeFixture(t, root, "templates/runtime-task.md", "# Template\n")
+	evidencePath := writeFixture(t, root, ".scratch/feature/docs/evidence.md", "EVIDENCE_MARKER\n")
+	parent := writeFixture(t, root, ".scratch/feature/issues/01-ready.md", `---
+artifact_type: issue
+title: Ready Issue
+status: ready-for-agent
+category: enhancement
+source_refs:
+  - ../docs/evidence.md
+approval_state: draft
+---
+# Issue
+
+Use the cited evidence.
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	taskPath, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renderedPayload := renderLLMPayload(client.payload)
+	if !strings.Contains(renderedPayload, "EVIDENCE_MARKER") {
+		t.Fatalf("payload should include source_refs content:\n%s", renderedPayload)
+	}
+	if !strings.Contains(renderedPayload, evidencePath) {
+		t.Fatalf("payload should include absolute source ref path:\n%s", renderedPayload)
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(task.Body, "## Context Pack") || !strings.Contains(task.Body, evidencePath) || !strings.Contains(task.Body, "included") {
+		t.Fatalf("draft should include Context Pack metadata:\n%s", task.Body)
+	}
+	if strings.Contains(task.Body, "EVIDENCE_MARKER") {
+		t.Fatalf("draft should not persist source_refs content:\n%s", task.Body)
+	}
+}
+
+func TestCreateDraftRuntimeTaskAllowsExplicitAbsoluteSourceRef(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "CONTEXT.md", "# Context\n")
+	writeFixture(t, root, "templates/runtime-task.md", "# Template\n")
+	absoluteRef := writeFixture(t, root, "external-evidence.md", "ABSOLUTE_REF_MARKER\n")
+	parent := writeFixture(t, root, ".scratch/feature/issues/01-ready.md", `---
+artifact_type: issue
+title: Ready Issue
+status: ready-for-agent
+category: enhancement
+source_refs:
+  - `+absoluteRef+`
+approval_state: draft
+---
+# Issue
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	taskPath, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renderedPayload := renderLLMPayload(client.payload)
+	if !strings.Contains(renderedPayload, "ABSOLUTE_REF_MARKER") {
+		t.Fatalf("payload should include explicit absolute source_ref:\n%s", renderedPayload)
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(task.Body, absoluteRef) || !strings.Contains(task.Body, "status=included") {
+		t.Fatalf("draft should record absolute source_ref metadata:\n%s", task.Body)
+	}
+}
+
+func TestCreateDraftRuntimeTaskExcludesSensitiveSourceRefs(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("HOME", root)
+	writeFixture(t, root, "CONTEXT.md", "# Context\n")
+	writeFixture(t, root, "templates/runtime-task.md", "# Template\n")
+	privateConfig := writeFixture(t, root, ".personal-agent-os/config.yaml", "PRIVATE_CONFIG_MARKER\n")
+	privateLog := writeFixture(t, root, ".personal-agent-os/runtime/logs/run.json", "PRIVATE_LOG_MARKER\n")
+	gitInternal := writeFixture(t, root, ".git/config", "GIT_INTERNAL_MARKER\n")
+	writeFixture(t, root, ".scratch/feature/.env", "ENV_SECRET_MARKER\n")
+	writeFixture(t, root, ".scratch/feature/key.pem", "PEM_SECRET_MARKER\n")
+	writeFixture(t, root, ".scratch/feature/token.txt", "TOKEN_SECRET_MARKER\n")
+	parent := writeFixture(t, root, ".scratch/feature/issues/01-ready.md", `---
+artifact_type: issue
+title: Ready Issue
+status: ready-for-agent
+category: enhancement
+source_refs:
+  - `+privateConfig+`
+  - `+privateLog+`
+  - `+gitInternal+`
+  - ../.env
+  - ../key.pem
+  - ../token.txt
+approval_state: draft
+---
+# Issue
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	taskPath, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renderedPayload := renderLLMPayload(client.payload)
+	for _, marker := range []string{"PRIVATE_CONFIG_MARKER", "PRIVATE_LOG_MARKER", "GIT_INTERNAL_MARKER", "ENV_SECRET_MARKER", "PEM_SECRET_MARKER", "TOKEN_SECRET_MARKER"} {
+		if strings.Contains(renderedPayload, marker) {
+			t.Fatalf("payload should not include sensitive marker %s:\n%s", marker, renderedPayload)
+		}
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(task.Body, "status=excluded") || !strings.Contains(task.Body, "sensitive source_ref") {
+		t.Fatalf("draft should record excluded sensitive refs:\n%s", task.Body)
+	}
+}
+
+func TestCreateDraftRuntimeTaskTruncatesLargeSourceRef(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "CONTEXT.md", "# Context\n")
+	writeFixture(t, root, "templates/runtime-task.md", "# Template\n")
+	largeContent := strings.Repeat("A", sourceRefMaxBytes) + "TAIL_MARKER_SHOULD_BE_TRUNCATED\n"
+	largePath := writeFixture(t, root, ".scratch/feature/docs/large.md", largeContent)
+	parent := writeFixture(t, root, ".scratch/feature/issues/01-ready.md", `---
+artifact_type: issue
+title: Ready Issue
+status: ready-for-agent
+category: enhancement
+source_refs:
+  - `+largePath+`
+approval_state: draft
+---
+# Issue
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	taskPath, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renderedPayload := renderLLMPayload(client.payload)
+	if strings.Contains(renderedPayload, "TAIL_MARKER_SHOULD_BE_TRUNCATED") {
+		t.Fatalf("payload should truncate large source ref:\n%s", renderedPayload)
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(task.Body, "truncated=true") {
+		t.Fatalf("draft should record truncation:\n%s", task.Body)
+	}
+}
+
+func TestCreateDraftRuntimeTaskExcludesBinarySourceRef(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "CONTEXT.md", "# Context\n")
+	writeFixture(t, root, "templates/runtime-task.md", "# Template\n")
+	binaryPath := filepath.Join(root, ".scratch", "feature", "docs", "binary.dat")
+	if err := os.MkdirAll(filepath.Dir(binaryPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(binaryPath, []byte{0xff, 0x00, 0x01}, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	parent := writeFixture(t, root, ".scratch/feature/issues/01-ready.md", `---
+artifact_type: issue
+title: Ready Issue
+status: ready-for-agent
+category: enhancement
+source_refs:
+  - ../docs/binary.dat
+approval_state: draft
+---
+# Issue
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	taskPath, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renderedPayload := renderLLMPayload(client.payload)
+	if strings.Contains(renderedPayload, "content:") {
+		t.Fatalf("binary source_ref should not render content:\n%s", renderedPayload)
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(task.Body, "status=excluded") || !strings.Contains(task.Body, "binary or non-UTF-8 source_ref") {
+		t.Fatalf("draft should record binary exclusion:\n%s", task.Body)
+	}
+}
+
+func TestCreateDraftRuntimeTaskExcludesExternalURLSourceRef(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "CONTEXT.md", "# Context\n")
+	writeFixture(t, root, "templates/runtime-task.md", "# Template\n")
+	parent := writeFixture(t, root, ".scratch/feature/issues/01-ready.md", `---
+artifact_type: issue
+title: Ready Issue
+status: ready-for-agent
+category: enhancement
+source_refs:
+  - https://example.com/evidence.md
+approval_state: draft
+---
+# Issue
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	taskPath, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renderedPayload := renderLLMPayload(client.payload)
+	if strings.Contains(renderedPayload, "content:") {
+		t.Fatalf("URL source_ref should not render content:\n%s", renderedPayload)
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(task.Body, "status=excluded") || !strings.Contains(task.Body, "unapproved external URL source_ref") {
+		t.Fatalf("draft should record URL exclusion:\n%s", task.Body)
+	}
+}
+
 func TestCreateDraftRuntimeTaskRefusesUnreadyParentBeforeLLMCall(t *testing.T) {
 	root := t.TempDir()
 	parent := writeFixture(t, root, ".scratch/feature/issues/01-draft.md", `---

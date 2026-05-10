@@ -24,6 +24,7 @@ type Artifact struct {
 	ApprovalState  string
 	ParentRefs     []string
 	ApprovalRefs   []string
+	SourceRefs     []string
 	RuntimeLogRefs []string
 }
 
@@ -86,12 +87,24 @@ type LLMPayload struct {
 	ParentPath        string
 	ParentArtifact    Artifact
 	ParentBody        string
+	ContextPack       []ContextPackItem
 	ContextSummary    string
 	ADRSummaries      map[string]string
 	RuntimeTaskTmpl   string
 	ResultSummary     string
 	RuntimeLogRefs    []string
 	ExcludedDataNotes []string
+}
+
+type ContextPackItem struct {
+	Ref       string
+	Path      string
+	Status    string
+	Reason    string
+	Source    string
+	Bytes     int
+	Truncated bool
+	Content   string
 }
 
 type RunLog struct {

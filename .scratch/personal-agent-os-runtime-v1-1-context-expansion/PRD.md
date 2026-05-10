@@ -67,11 +67,14 @@ The target user is the local Personal Agent OS owner who wants `paos` to produce
 
 ## Requirements
 
-- `paos draft <parent>` must parse `source_refs` from frontmatter and body when those references are part of the parent artifact contract.
-- Source references must resolve relative to the artifact file first and then to the repository root only when the reference is explicitly repo-root anchored.
-- The resolver must reject references outside allowed roots unless a future approved design expands the data-source boundary.
-- The resolver must reject Private Runtime Log paths, private config paths, `.git` internals, credential files, and unapproved external URLs by default.
-- Each included context item must record path, kind, byte size or truncation status, reason, and source field.
+- `paos draft <parent>` must parse `source_refs` from frontmatter only; body links are not authorization to read extra files.
+- Source references may be relative or absolute. Relative paths resolve from the parent artifact file directory.
+- Absolute paths may point outside the current repo only when explicitly listed in `source_refs`.
+- The resolver must reject Private Runtime Log paths, PAOS private config paths, `.git` internals, credential-shaped files, binary/non-UTF-8 files, and unapproved external URLs by default.
+- Plain `source_refs` are not credential-reading authorization; credential-shaped files require a future high-risk ADR before any support is added.
+- Included file content is capped at 64KB per file. Runtime v1.1 has no global Context Pack total-size limit.
+- Runtime Task Drafts must persist Context Pack metadata only; they must not copy included file contents into the Git-backed Control Plane.
+- Each included context item must record path, byte size or truncation status, reason, and source field.
 - Each excluded context item must record path or ref, exclusion reason, and whether user approval could change the decision.
 - Project adapter selection must be deterministic from the parent path, configured project root, or explicit adapter metadata.
 - The Terra/OpenClaw adapter must include `projects/terra-openclaw-setup-backend.md` and route to `$terra-onboarding` or an equivalent context-pack helper before drawing Terra-specific conclusions.
@@ -84,8 +87,12 @@ The target user is the local Personal Agent OS owner who wants `paos` to produce
 
 ## Acceptance Criteria
 
-- [ ] Given a `ready-for-agent` Issue with repo-local `source_refs`, `paos draft <parent>` includes an auditable context pack in the LLM Payload and resulting Runtime Task Draft.
-- [ ] Given an out-of-root, Private Runtime Log, private config, credential, or URL reference, `paos draft <parent>` excludes it with a visible reason before calling the LLM.
+- [ ] Given a `ready-for-agent` Issue with frontmatter `source_refs`, `paos draft <parent>` includes an auditable context pack in the LLM Payload and resulting Runtime Task Draft.
+- [ ] Given a relative `source_refs` entry, `paos draft <parent>` resolves it from the parent artifact directory.
+- [ ] Given an explicit absolute `source_refs` entry outside the repo, `paos draft <parent>` may include it if it is text and not sensitive.
+- [ ] Given a Private Runtime Log, PAOS private config, `.git`, credential-shaped, binary, or URL reference, `paos draft <parent>` excludes it with a visible reason before calling the LLM.
+- [ ] Given a file larger than 64KB, `paos draft <parent>` truncates the LLM Payload content and records `truncated=true`.
+- [ ] The Runtime Task Draft `## Context Pack` section records full absolute paths and metadata only, not included file contents.
 - [ ] Given a Terra/OpenClaw parent artifact, project adapter resolution adds Terra onboarding and collaboration-rule context without touching the Terra working tree.
 - [ ] Generated implementation Runtime Task Drafts include RED, GREEN, and REFACTOR/validation intent.
 - [ ] Existing v1 guarantees remain true: strict LLM output, default exclusion of Private Runtime Log contents, no default project-wide source ingestion, and no execution before Approval Record.
@@ -103,7 +110,7 @@ The target user is the local Personal Agent OS owner who wants `paos` to produce
 
 ## Risks
 
-- Expanding context can leak private data if path resolution is too broad; mitigation is explicit allow rules, exclusion records, and tests for blocked paths.
+- Expanding context can leak private data if path resolution is too broad; mitigation is explicit frontmatter-only references, exclusion records, 64KB per-file truncation, and tests for blocked sensitive paths.
 - Adapter output can become stale; mitigation is to treat adapters as routing context only and re-read current files during each draft.
 - TDD wording can become decorative; mitigation is schema-level fields and tests that reject implementation drafts without RED/GREEN/REFACTOR intent.
 - Watcher-assisted drafting can surprise the user; mitigation is report-only default and explicit opt-in if implemented.
@@ -113,4 +120,4 @@ The target user is the local Personal Agent OS owner who wants `paos` to produce
 
 - Should watcher-assisted drafting be a v1.1 implementation requirement, or should v1.1 only preserve `watch` as report-only and improve explicit `paos draft <parent>`?
 - What exact adapter selection mechanism should be used first: path prefix, repo root config, or explicit parent frontmatter?
-- Should context-pack byte limits be global, per-file, or both?
+- No global Context Pack total-size limit is set in v1.1; revisit this if payload size becomes a practical provider limit.
