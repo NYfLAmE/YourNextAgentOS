@@ -44,6 +44,26 @@ _Avoid_: default script execution, unrestricted API access
 A change in an approved local Control Plane location that the **Personal Agent OS Runtime** may observe and route.
 _Avoid_: unapproved mailbox event, browser-history event, implicit external signal
 
+**Execution Workspace**:
+A task-scoped Git worktree where the Runtime runner may read and write files for an approved task.
+_Avoid_: main working tree, global project permission, user home directory
+
+**Command Template**:
+An approved shell command shape whose structure is fixed and whose parameters are constrained by the task plan.
+_Avoid_: arbitrary shell access, one-off untracked command, command family
+
+**Env Profile**:
+A task-scoped declaration of environment variables and value sources that may be injected into Runtime execution.
+_Avoid_: inherited shell environment, global token store, implicit credentials
+
+**Network Intent**:
+A task-plan statement that records whether a Runtime command is expected to use the network and why.
+_Avoid_: domain firewall rule, connector whitelist, hidden external access
+
+**Private Runtime Log**:
+A non-Git local log store for full Runtime stdout, stderr, command, timing, and result records.
+_Avoid_: Control Plane artifact, report source by default, project scratch file
+
 ## Relationships
 
 - **Personal Agent OS** defines policy and language for one **Personal Agent OS Runtime**
@@ -52,14 +72,21 @@ _Avoid_: unapproved mailbox event, browser-history event, implicit external sign
 - **Runtime Log** records execution history but does not override **Workflow State**
 - **Plan-Approved Autonomy** is granted by an **Approval Record**
 - **Core Tools** are available before **Fat Agent Extension Points**
+- **Execution Workspaces** bound the file impact of approved command execution
+- **Command Templates** and **Env Profiles** are approved at task scope
+- **Private Runtime Logs** record execution history outside the **Control Plane**
 
 ## Example dialogue
 
 > **Dev:** "Can the **Personal Agent OS Runtime** approve this issue and keep going automatically?"
 > **Domain expert:** "Only if the **Control Plane** contains an **Approval Record** granting **Plan-Approved Autonomy** for this task; otherwise high-risk work must stop."
 
+> **Dev:** "Can this task run the same test command several times?"
+> **Domain expert:** "Yes, if the plan approved that **Command Template** inside the task **Execution Workspace**."
+
 ## Flagged ambiguities
 
 - "Agent OS", "AgentOS", and "YourNextAgentOS" were used to mean both the handbook and the automation layer; resolved: **Personal Agent OS** is the handbook and **Personal Agent OS Runtime** is its future execution layer.
 - "Markdown docs" was used to mean passive documentation; resolved: Git-backed Markdown in this repository is the **Control Plane** when it carries policy, workflow state, or approval records.
 - "Approval" was used to mean both transient chat confirmation and durable permission; resolved: only an **Approval Record** is authoritative for Runtime execution.
+- "Shell approval" was used to mean both arbitrary command access and repeatable task commands; resolved: repeatable execution approves a constrained **Command Template**, not unrestricted shell access.
