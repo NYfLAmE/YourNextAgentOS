@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: execute approved Command List
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -9,7 +9,7 @@ source_refs:
   - ../../../docs/adr/0010-task-scoped-runtime-execution-safety.md
   - ../../../docs/adr/0011-runtime-task-execution-request.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: high
 sent_at: null
 late_supplement_for: null
@@ -59,3 +59,9 @@ This issue may introduce process execution, so keep the first self-test command 
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Implemented `paos run <task>` for tasks with `status: ready`, `approval_state: approved`, and a matching Approval Record.
+- Runtime creates a dedicated Git worktree, executes only the approved Command List, and writes full command logs under the private runtime directory.
+- Runtime Task and parent Issue/Plan receive short result summaries and log references, not full stdout/stderr contents.

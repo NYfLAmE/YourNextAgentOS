@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: scan Control Plane artifacts
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -9,7 +9,7 @@ source_refs:
   - ../../../docs/adr/0002-markdown-git-control-plane.md
   - ../../../docs/adr/0013-watcher-and-scan-trigger-model.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: medium
 sent_at: null
 late_supplement_for: null
@@ -56,3 +56,9 @@ Use structured frontmatter parsing instead of ad hoc string matching. `scan` mus
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Implemented read-only `.scratch/**.md` scanning with structured YAML frontmatter parsing.
+- Scan reports PRDs, Issues, Runtime Tasks, Approval Records, draft opportunities, Runtime Task statuses, and broken parent or approval refs.
+- `paos scan` does not call LLM providers and does not write Control Plane files.

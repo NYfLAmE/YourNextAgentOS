@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: LLM repair draft from failure
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -9,7 +9,7 @@ source_refs:
   - ../../../docs/adr/0005-strict-llm-output-contract.md
   - ../../../docs/adr/0014-llm-drafting-in-runtime-v1.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: high
 sent_at: null
 late_supplement_for: null
@@ -57,3 +57,9 @@ This preserves the v1 boundary: LLM can propose the next Runtime Task, but human
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Extended `paos draft <failed-task>` to build a repair-mode LLM Payload from Control Plane result text and Private Runtime Log refs.
+- Default repair payload does not read full Private Runtime Log contents and does not include project source files.
+- Repair output remains a draft Runtime Task and does not execute, approve, retry, or edit files directly.

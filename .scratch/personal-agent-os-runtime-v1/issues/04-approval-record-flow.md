@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: Approval Record flow
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -10,7 +10,7 @@ source_refs:
   - ../../../docs/adr/0010-task-scoped-runtime-execution-safety.md
   - ../../../templates/approval-record.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: high
 sent_at: null
 late_supplement_for: null
@@ -59,3 +59,9 @@ Approval is durable and local. A transient CLI confirmation is not enough unless
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Implemented `paos approve <task>` with explicit approver override and local-user default.
+- Approval writes `.scratch/<feature>/approvals/<id>.md`, records the approved execution boundary, and links it from the Runtime Task.
+- Approval refuses Runtime Tasks without a complete Execution Workspace or Command List.

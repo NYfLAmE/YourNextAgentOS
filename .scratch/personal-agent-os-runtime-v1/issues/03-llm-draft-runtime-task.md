@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: LLM draft Runtime Task
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -11,7 +11,7 @@ source_refs:
   - ../../../docs/adr/0014-llm-drafting-in-runtime-v1.md
   - ../../../templates/runtime-task.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: high
 sent_at: null
 late_supplement_for: null
@@ -62,3 +62,9 @@ This is LLM Drafting only, not Builder automation. The Command List can be model
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Implemented `paos draft <parent>` with bounded LLM Payload construction from Control Plane text, ADR summaries, and the Runtime Task template.
+- Implemented OpenAI-compatible provider calls through private config and `api_key_env`.
+- Implemented strict JSON validation and Markdown rendering to `.scratch/<feature>/runtime-tasks/<NN>-<slug>.md` with `status: draft` and `approval_state: draft`.

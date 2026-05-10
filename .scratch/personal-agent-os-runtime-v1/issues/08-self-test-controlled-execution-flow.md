@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: self-test controlled execution flow
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -9,7 +9,7 @@ source_refs:
   - ../../../templates/runtime-task.md
   - ../../../templates/approval-record.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: high
 sent_at: null
 late_supplement_for: null
@@ -63,3 +63,9 @@ Use `personal-agent-os` itself for the first acceptance scenario because it mini
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Added automated self-tests covering config, scan, LLM drafting, approval, run, private log boundaries, and repair payload construction.
+- Added `docs/runtime-v1-self-test.md` with the local test and manual smoke-check boundary.
+- The self-test uses temporary directories, a mock LLM provider, and a temporary Git repository; it does not require external connectors or a real API key.

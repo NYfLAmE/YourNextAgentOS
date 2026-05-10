@@ -1,7 +1,7 @@
 ---
 artifact_type: issue
 title: paos CLI skeleton and private LLM config
-status: needs-triage
+status: ready-for-human
 category: enhancement
 source_refs:
   - ../PRD.md
@@ -10,7 +10,7 @@ source_refs:
   - ../../../docs/adr/0012-paos-cli-name.md
   - ../../../docs/adr/0014-llm-drafting-in-runtime-v1.md
 confidence: medium
-approval_state: draft
+approval_state: approved
 risk_level: high
 sent_at: null
 late_supplement_for: null
@@ -57,3 +57,9 @@ Respect ADR-0012 for the CLI name and ADR-0014 for private LLM config boundaries
 ## Comments
 
 Append discussion and triage notes here.
+
+Implementation note 2026-05-10:
+
+- Implemented `cmd/paos` with command dispatch for `watch`, `scan`, `draft`, `approve`, `run`, and `status`.
+- Implemented private config loading at `~/.personal-agent-os/config.yaml` with `runtime_dir`, `worktree_root`, and OpenAI-compatible `llm.base_url`, `llm.model`, `llm.api_key_env`.
+- `paos status` reports config discovery booleans and private paths without resolving or printing secret values.
