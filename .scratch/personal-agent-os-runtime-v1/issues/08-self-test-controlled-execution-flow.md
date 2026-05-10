@@ -69,3 +69,9 @@ Implementation note 2026-05-10:
 - Added automated self-tests covering config, scan, LLM drafting, approval, run, private log boundaries, and repair payload construction.
 - Added `docs/runtime-v1-self-test.md` with the local test and manual smoke-check boundary.
 - The self-test uses temporary directories, a mock LLM provider, and a temporary Git repository; it does not require external connectors or a real API key.
+
+TDD hardening note 2026-05-10:
+
+- Added `docs/runtime-v1-tdd-hardening.md` to record the corrective RED/GREEN pass and behavior coverage matrix.
+- Added public CLI behavior tests for read-only `scan`, report-only `watch --once`, and source-excluding `draft`.
+- Fixed two tested boundary gaps: `run` now rejects execution-boundary drift after approval, and `draft` now rejects parents outside `.scratch/<feature>` before building LLM payloads.

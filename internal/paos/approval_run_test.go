@@ -43,6 +43,79 @@ func TestApproveRuntimeTaskRejectsMissingCommandList(t *testing.T) {
 	}
 }
 
+func TestRunRuntimeTaskRefusesWithoutApprovalRecord(t *testing.T) {
+	root := t.TempDir()
+	taskPath := writeRuntimeTaskFixture(t, root, ".scratch/feature/runtime-tasks/01-doc-check.md", "doc-check", true)
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	task.Fields["status"] = "ready"
+	task.Fields["approval_state"] = "approved"
+	task.Fields["approval_refs"] = []string{}
+	if err := WriteDocument(task); err != nil {
+		t.Fatal(err)
+	}
+	cfg := Config{RuntimeDir: filepath.Join(root, ".private-runtime"), WorktreeRoot: filepath.Join(root, ".private-runtime", "worktrees")}
+	err = RunRuntimeTask(t.Context(), root, taskPath, cfg, time.Date(2026, 5, 10, 1, 3, 0, 0, time.UTC))
+	if err == nil {
+		t.Fatal("expected runtime task without approval_refs to be refused")
+	}
+	if !strings.Contains(err.Error(), "no approval_refs") {
+		t.Fatalf("expected approval_refs error, got %v", err)
+	}
+}
+
+func TestRunRuntimeTaskRejectsApprovalRecordForDifferentTask(t *testing.T) {
+	root := t.TempDir()
+	taskPath := writeRuntimeTaskFixture(t, root, ".scratch/feature/runtime-tasks/01-doc-check.md", "doc-check", true)
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	spec, err := extractExecutionSpec(task.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	specYAML, err := renderExecutionSpec(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approvalPath := writeFixture(t, root, ".scratch/feature/approvals/01-other-task.md", `---
+artifact_type: approval_record
+title: Approve Other Task
+status: approved
+runtime_task_ref: ../runtime-tasks/99-other.md
+approval_scope:
+  - runtime_task
+  - execution_workspace
+  - command_list
+  - env_profile
+  - network_intent
+  - private_runtime_log
+---
+# Approval Record: Approve Other Task
+
+## Approved Boundary
+
+`+"```yaml\n"+specYAML+"\n```"+`
+`)
+	task.Fields["status"] = "ready"
+	task.Fields["approval_state"] = "approved"
+	task.Fields["approval_refs"] = []string{relativePath(filepath.Dir(taskPath), approvalPath)}
+	if err := WriteDocument(task); err != nil {
+		t.Fatal(err)
+	}
+	cfg := Config{RuntimeDir: filepath.Join(root, ".private-runtime"), WorktreeRoot: filepath.Join(root, ".private-runtime", "worktrees")}
+	err = RunRuntimeTask(t.Context(), root, taskPath, cfg, time.Date(2026, 5, 10, 1, 3, 0, 0, time.UTC))
+	if err == nil {
+		t.Fatal("expected approval record for a different task to be refused")
+	}
+	if !strings.Contains(err.Error(), "does not approve this runtime task") {
+		t.Fatalf("expected wrong task approval error, got %v", err)
+	}
+}
+
 func TestRunRuntimeTaskExecutesApprovedCommandAndWritesPrivateLog(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git not available")
@@ -103,6 +176,50 @@ approval_state: draft
 	}
 	if !strings.Contains(string(parent), "Private Runtime Log refs are linked from the Runtime Task") {
 		t.Fatalf("parent summary missing:\n%s", string(parent))
+	}
+}
+
+func TestRunRuntimeTaskRejectsBoundaryChangedAfterApproval(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not available")
+	}
+	root := t.TempDir()
+	runGit(t, root, "init")
+	runGit(t, root, "config", "user.email", "test@example.invalid")
+	runGit(t, root, "config", "user.name", "Test User")
+	if err := os.WriteFile(filepath.Join(root, "README.md"), []byte("# Test\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, root, "add", "README.md")
+	runGit(t, root, "commit", "-m", "init")
+	writeFixture(t, root, ".scratch/feature/issues/01-parent.md", `---
+artifact_type: issue
+title: Parent
+status: ready-for-agent
+approval_state: draft
+---
+# Parent
+`)
+	taskPath := writeRuntimeTaskFixture(t, root, ".scratch/feature/runtime-tasks/01-doc-check.md", "doc-check", true)
+	_, err := ApproveRuntimeTask(root, taskPath, "tester", time.Date(2026, 5, 10, 1, 2, 3, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	task, err := ReadDocument(taskPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	task.Body = strings.Replace(task.Body, "printf 'ok\\n'", "printf 'changed-after-approval\\n'", 1)
+	if err := WriteDocument(task); err != nil {
+		t.Fatal(err)
+	}
+	cfg := Config{RuntimeDir: filepath.Join(root, ".private-runtime"), WorktreeRoot: filepath.Join(root, ".private-runtime", "worktrees")}
+	err = RunRuntimeTask(t.Context(), root, taskPath, cfg, time.Date(2026, 5, 10, 1, 3, 0, 0, time.UTC))
+	if err == nil {
+		t.Fatal("expected changed execution boundary to be rejected")
+	}
+	if !strings.Contains(err.Error(), "approval boundary") {
+		t.Fatalf("expected approval boundary error, got %v", err)
 	}
 }
 

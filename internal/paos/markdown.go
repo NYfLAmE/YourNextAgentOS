@@ -128,30 +128,38 @@ func appendSectionNote(body, heading, note string) string {
 }
 
 func extractExecutionSpec(body string) (ExecutionSpec, error) {
-	section := extractSection(body, "Execution Spec")
+	return extractExecutionSpecFromSection(body, "Execution Spec")
+}
+
+func extractApprovedBoundary(body string) (ExecutionSpec, error) {
+	return extractExecutionSpecFromSection(body, "Approved Boundary")
+}
+
+func extractExecutionSpecFromSection(body, heading string) (ExecutionSpec, error) {
+	section := extractSection(body, heading)
 	if section == "" {
-		return ExecutionSpec{}, fmt.Errorf("Execution Spec section not found")
+		return ExecutionSpec{}, fmt.Errorf("%s section not found", heading)
 	}
 	start := strings.Index(section, "```yaml")
 	if start < 0 {
 		start = strings.Index(section, "```yml")
 	}
 	if start < 0 {
-		return ExecutionSpec{}, fmt.Errorf("Execution Spec YAML fence not found")
+		return ExecutionSpec{}, fmt.Errorf("%s YAML fence not found", heading)
 	}
 	startLine := strings.Index(section[start:], "\n")
 	if startLine < 0 {
-		return ExecutionSpec{}, fmt.Errorf("Execution Spec YAML fence is incomplete")
+		return ExecutionSpec{}, fmt.Errorf("%s YAML fence is incomplete", heading)
 	}
 	start += startLine + 1
 	end := strings.Index(section[start:], "```")
 	if end < 0 {
-		return ExecutionSpec{}, fmt.Errorf("Execution Spec YAML terminator not found")
+		return ExecutionSpec{}, fmt.Errorf("%s YAML terminator not found", heading)
 	}
 	yamlText := section[start : start+end]
 	var spec ExecutionSpec
 	if err := yaml.Unmarshal([]byte(yamlText), &spec); err != nil {
-		return ExecutionSpec{}, fmt.Errorf("parse Execution Spec: %w", err)
+		return ExecutionSpec{}, fmt.Errorf("parse %s: %w", heading, err)
 	}
 	return spec, nil
 }

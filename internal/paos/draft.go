@@ -59,6 +59,9 @@ func CreateDraftRuntimeTask(ctx context.Context, root, parentPath string, cfg Co
 	if client == nil {
 		client = OpenAICompatibleClient{}
 	}
+	if _, err := featureDir(root, parentPath); err != nil {
+		return "", err
+	}
 	payload, err := BuildLLMPayload(root, parentPath)
 	if err != nil {
 		return "", err

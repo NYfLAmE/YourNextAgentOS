@@ -27,6 +27,10 @@ func RunRuntimeTask(ctx context.Context, root, taskPath string, cfg Config, now 
 	if len(approvalRefs) == 0 {
 		return fmt.Errorf("runtime task has no approval_refs")
 	}
+	spec, err := extractExecutionSpec(doc.Body)
+	if err != nil {
+		return err
+	}
 	for _, ref := range approvalRefs {
 		approvalPath := resolveRef(taskPath, ref)
 		approval, err := ReadDocument(approvalPath)
@@ -40,10 +44,9 @@ func RunRuntimeTask(ctx context.Context, root, taskPath string, cfg Config, now 
 		if taskRef == "" || filepath.Clean(resolveRef(approvalPath, taskRef)) != filepath.Clean(taskPath) {
 			return fmt.Errorf("approval_ref %s does not approve this runtime task", ref)
 		}
-	}
-	spec, err := extractExecutionSpec(doc.Body)
-	if err != nil {
-		return err
+		if err := validateApprovalBoundary(approval, spec); err != nil {
+			return fmt.Errorf("approval_ref %s approval boundary mismatch: %w", ref, err)
+		}
 	}
 	if err := validateExecutionSpec(spec); err != nil {
 		return err
@@ -203,6 +206,28 @@ func finalizeRun(root, taskPath string, doc Document, logRefs []string, runErr e
 	updateParentWithRunSummary(root, taskPath, doc, status, logRefs)
 	if runErr != nil {
 		return runErr
+	}
+	return nil
+}
+
+func validateApprovalBoundary(approval Document, taskSpec ExecutionSpec) error {
+	approvedSpec, err := extractApprovedBoundary(approval.Body)
+	if err != nil {
+		return err
+	}
+	if err := validateExecutionSpec(approvedSpec); err != nil {
+		return err
+	}
+	approvedYAML, err := renderExecutionSpec(approvedSpec)
+	if err != nil {
+		return err
+	}
+	taskYAML, err := renderExecutionSpec(taskSpec)
+	if err != nil {
+		return err
+	}
+	if approvedYAML != taskYAML {
+		return fmt.Errorf("current Execution Spec differs from the approved boundary")
 	}
 	return nil
 }

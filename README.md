@@ -25,6 +25,7 @@ The private report archive lives in:
 - [Terra adapter](projects/terra-openclaw-setup-backend.md): project-specific workflow rules for `TerraOpenclawSetupBackend`.
 - [Managed user skills](skills/README.md): Git-managed local user skills exposed through `/home/ZykLyj/.agents/skills`.
 - [Runtime v1 self-test](docs/runtime-v1-self-test.md): local validation boundary for the first `paos` CLI implementation.
+- [Runtime v1 TDD hardening](docs/runtime-v1-tdd-hardening.md): corrective behavior coverage matrix and RED/GREEN evidence for Runtime v1.
 - [V2 automation backlog](backlog/v2-automation.md): cron, email, connector, and automation work intentionally out of V1.
 
 Future Runtime PRDs must start from the domain context and architecture decisions before proposing behavior, schemas, connectors, or execution rules.

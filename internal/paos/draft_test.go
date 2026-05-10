@@ -77,6 +77,26 @@ approval_state: draft
 	}
 }
 
+func TestCreateDraftRuntimeTaskRefusesParentOutsideScratchBeforeLLMCall(t *testing.T) {
+	root := t.TempDir()
+	parent := writeFixture(t, root, "outside-ready-issue.md", `---
+artifact_type: issue
+title: Outside Ready Issue
+status: ready-for-agent
+category: enhancement
+approval_state: draft
+---
+# Issue
+`)
+	client := &fakeLLM{response: validDraftResponse(root)}
+	if _, err := CreateDraftRuntimeTask(t.Context(), root, parent, Config{}, client); err == nil {
+		t.Fatal("expected parent outside .scratch to be rejected")
+	}
+	if client.payload.ParentPath != "" {
+		t.Fatalf("LLM was called before parent location validation: %#v", client.payload)
+	}
+}
+
 func TestParseDraftResponseRejectsMalformedOutput(t *testing.T) {
 	if _, err := parseDraftResponse("```json\n{}\n```"); err == nil {
 		t.Fatal("expected Markdown-fenced output to fail strict JSON parsing")
