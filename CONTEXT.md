@@ -24,6 +24,18 @@ _Avoid_: knowledge base, documentation-only handbook, database
 A Control Plane artifact that asks the **Personal Agent OS Runtime** to execute approved command templates for a parent Issue or Plan.
 _Avoid_: issue replacement, natural-language shell request, hidden daemon job
 
+**Runtime Task Draft**:
+A not-yet-approved **Runtime Task** produced for human review before execution.
+_Avoid_: executable job, approved task, hidden model output
+
+**LLM Drafting**:
+The Runtime capability that uses a configured model to produce structured **Runtime Task Drafts** from Control Plane text.
+_Avoid_: Builder automation, direct file edit, command execution
+
+**LLM Payload**:
+The bounded Control Plane text sent to a model provider for **LLM Drafting**.
+_Avoid_: private runtime log by default, project source tree by default, implicit data export
+
 **Workflow State**:
 Human-editable frontmatter or Markdown status that represents where a durable artifact is in an approved workflow.
 _Avoid_: runtime log, hidden daemon state
@@ -82,6 +94,7 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 - **paos** is the local CLI and daemon entrypoint for the **Personal Agent OS Runtime**
 - **Personal Agent OS Runtime** observes **Control Plane Events**
 - **Runtime Tasks** belong to a parent Issue or Plan
+- **LLM Drafting** creates **Runtime Task Drafts** from **LLM Payloads**
 - **Control Plane** contains **Workflow State** and **Approval Records**
 - **Runtime Log** records execution history but does not override **Workflow State**
 - **Plan-Approved Autonomy** is granted by an **Approval Record**
@@ -101,6 +114,9 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 > **Dev:** "Can this ready issue be executed by the Runtime?"
 > **Domain expert:** "Only after `paos` or a human creates a **Runtime Task** with an explicit **Command List** and an **Approval Record**."
 
+> **Dev:** "Can the model draft a task from this issue?"
+> **Domain expert:** "Yes, through **LLM Drafting**, but the model receives only the approved **LLM Payload** and produces a **Runtime Task Draft** for review."
+
 ## Flagged ambiguities
 
 - "Agent OS", "AgentOS", and "YourNextAgentOS" were used to mean both the handbook and the automation layer; resolved: **Personal Agent OS** is the handbook and **Personal Agent OS Runtime** is its future execution layer.
@@ -108,3 +124,4 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 - "Approval" was used to mean both transient chat confirmation and durable permission; resolved: only an **Approval Record** is authoritative for Runtime execution.
 - "Shell approval" was used to mean both arbitrary command access and repeatable task commands; resolved: repeatable execution approves a constrained **Command Template**, not unrestricted shell access.
 - "Runtime Task" was considered as a possible Issue replacement; resolved: a **Runtime Task** is an execution request for a parent Issue or Plan, not a replacement for engineering delivery artifacts.
+- "LLM drafting" was considered as a possible Builder shortcut; resolved: **LLM Drafting** creates reviewable **Runtime Task Drafts** only and does not execute commands or modify files.
