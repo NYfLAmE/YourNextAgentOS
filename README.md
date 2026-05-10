@@ -13,6 +13,8 @@ The private report archive lives in:
 
 ## Start Here
 
+- [Domain context](CONTEXT.md): canonical language for Personal Agent OS, the future Runtime, the Control Plane, approvals, autonomy, and tool boundaries.
+- [Architecture decisions](docs/adr/): accepted architecture decisions that future Runtime PRDs and implementations must respect.
 - [Agent roster](system/agent-roster.md): the six default agent roles and how they cooperate.
 - [Shared context contract](system/shared-context-contract.md): how agents exchange facts, assumptions, decisions, and handoffs.
 - [Risk and HITL policy](system/risk-and-hitl-policy.md): when agents may continue and when they must stop for human approval.
@@ -23,6 +25,8 @@ The private report archive lives in:
 - [Terra adapter](projects/terra-openclaw-setup-backend.md): project-specific workflow rules for `TerraOpenclawSetupBackend`.
 - [Managed user skills](skills/README.md): Git-managed local user skills exposed through `/home/ZykLyj/.agents/skills`.
 - [V2 automation backlog](backlog/v2-automation.md): cron, email, connector, and automation work intentionally out of V1.
+
+Future Runtime PRDs must start from the domain context and architecture decisions before proposing behavior, schemas, connectors, or execution rules.
 
 ## V1 Boundaries
 
