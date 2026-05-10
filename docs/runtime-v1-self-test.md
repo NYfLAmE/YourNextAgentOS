@@ -13,6 +13,7 @@ The implemented self-test covers:
 - Approval Record creation and Runtime Task state transition to `ready`
 - approved Command List execution in a dedicated Git worktree
 - Private Runtime Log writes outside the Git-backed Control Plane
+- parent Issue transition from `ready-for-agent` to `ready-for-human` after a Runtime result
 - failed Runtime Task repair payload construction without reading full Private Runtime Log contents
 
 ## Automated Check
@@ -51,3 +52,5 @@ Do not commit this private config or API key values.
 ## Evidence Boundary
 
 Runtime Task Markdown may reference Private Runtime Log paths, but it must not paste full stdout, stderr, or secrets into the Git-backed Control Plane. Full command output belongs in the private runtime directory configured outside Git.
+
+After `paos run` writes a Runtime result, the parent Issue should receive only a short summary and move out of `ready-for-agent` so `paos scan` does not keep offering the same parent as a new draft opportunity.

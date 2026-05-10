@@ -75,3 +75,8 @@ TDD hardening note 2026-05-10:
 - Added `docs/runtime-v1-tdd-hardening.md` to record the corrective RED/GREEN pass and behavior coverage matrix.
 - Added public CLI behavior tests for read-only `scan`, report-only `watch --once`, and source-excluding `draft`.
 - Fixed two tested boundary gaps: `run` now rejects execution-boundary drift after approval, and `draft` now rejects parents outside `.scratch/<feature>` before building LLM payloads.
+
+Acceptance refinement note 2026-05-10:
+
+- `paos run` now moves the parent Issue from `ready-for-agent` to `ready-for-human` after writing Runtime result feedback, preventing repeated draft opportunities for the same handled Issue.
+- `paos approve` now replaces pending approval wording in the Runtime Task and keeps Markdown headings separated by a blank line.

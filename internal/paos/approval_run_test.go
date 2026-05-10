@@ -33,6 +33,12 @@ func TestApproveRuntimeTaskCreatesRecordAndMarksReady(t *testing.T) {
 	if len(fieldStringSlice(task.Fields, "approval_refs")) != 1 {
 		t.Fatalf("expected approval ref: %#v", task.Fields)
 	}
+	if strings.Contains(task.Body, "Approval Record pending") || strings.Contains(task.Body, "\nPending.\n") {
+		t.Fatalf("approval section still contains pending wording:\n%s", task.Body)
+	}
+	if !strings.Contains(task.Body, "Approval Record: `../approvals/20260510T010203Z-ready-doc-check.md`\n\n## Result") {
+		t.Fatalf("approval section should be separated from Result heading by a blank line:\n%s", task.Body)
+	}
 }
 
 func TestApproveRuntimeTaskRejectsMissingCommandList(t *testing.T) {
@@ -176,6 +182,22 @@ approval_state: draft
 	}
 	if !strings.Contains(string(parent), "Private Runtime Log refs are linked from the Runtime Task") {
 		t.Fatalf("parent summary missing:\n%s", string(parent))
+	}
+	parentDoc, err := ReadDocument(filepath.Join(root, ".scratch/feature/issues/01-parent.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fieldString(parentDoc.Fields, "status") != "ready-for-human" {
+		t.Fatalf("parent issue should move out of ready-for-agent after runtime result, got %#v", parentDoc.Fields)
+	}
+	scan, err := ScanControlPlane(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, opportunity := range scan.DraftOpportunities {
+		if opportunity.RelPath == ".scratch/feature/issues/01-parent.md" {
+			t.Fatalf("completed parent issue should not remain a draft opportunity: %#v", scan.DraftOpportunities)
+		}
 	}
 }
 

@@ -247,6 +247,9 @@ func updateParentWithRunSummary(root, taskPath string, taskDoc Document, status 
 	if len(logRefs) > 0 {
 		note += " Private Runtime Log refs are linked from the Runtime Task."
 	}
+	if fieldString(parent.Fields, "status") == "ready-for-agent" {
+		parent.Fields["status"] = "ready-for-human"
+	}
 	parent.Body = appendSectionNote(parent.Body, "Comments", note)
 	_ = WriteDocument(parent)
 }

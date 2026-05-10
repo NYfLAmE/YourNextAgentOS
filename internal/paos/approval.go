@@ -65,7 +65,7 @@ func ApproveRuntimeTask(root, taskPath, approver string, now time.Time) (string,
 	doc.Fields["status"] = "ready"
 	doc.Fields["approval_state"] = "approved"
 	appendUniqueString(doc.Fields, "approval_refs", approvalRel)
-	doc.Body = appendSectionNote(doc.Body, "Approval", fmt.Sprintf("- Approved by `%s` at `%s`.\n- Approval Record: `%s`", approver, now.UTC().Format(time.RFC3339), approvalRel))
+	doc.Body = replaceSection(doc.Body, "Approval", fmt.Sprintf("- Approved by `%s` at `%s`.\n- Approval Record: `%s`", approver, now.UTC().Format(time.RFC3339), approvalRel))
 	if err := WriteDocument(doc); err != nil {
 		return "", err
 	}

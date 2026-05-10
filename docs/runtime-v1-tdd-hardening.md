@@ -41,6 +41,8 @@ Tests should protect observable Runtime behavior through `paos` CLI entrypoints 
 | `paos run` verifies the Approval Record points to the current Runtime Task. | `TestRunRuntimeTaskRejectsApprovalRecordForDifferentTask` |
 | `paos run` rejects execution-boundary drift after approval. | `TestRunRuntimeTaskRejectsBoundaryChangedAfterApproval` |
 | `paos run` creates a dedicated Git worktree, executes only approved commands, writes full Private Runtime Logs outside Git, and only links summaries to Control Plane. | `TestRunRuntimeTaskExecutesApprovedCommandAndWritesPrivateLog` |
+| Parent Issues move out of `ready-for-agent` after Runtime result feedback. | `TestRunRuntimeTaskExecutesApprovedCommandAndWritesPrivateLog` |
+| `paos approve` replaces pending approval wording and preserves Markdown section spacing. | `TestApproveRuntimeTaskCreatesRecordAndMarksReady` |
 
 ## Remaining Gaps
 
@@ -48,6 +50,7 @@ Tests should protect observable Runtime behavior through `paos` CLI entrypoints 
 - CLI argument parsing is minimal and covered only through representative command paths.
 - Dedicated worktree cleanup is not implemented in Runtime v1 and therefore not tested.
 - Network intent is recorded and approved, but Runtime v1 does not enforce domain-level network policy by design.
+- Runtime v1 can discover draft opportunities and execute approved command lists, but it does not yet autonomously draft, approve, and implement issues from watcher events without a human Approval Record.
 
 ## Future Rule
 

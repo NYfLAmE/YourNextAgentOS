@@ -127,6 +127,29 @@ func appendSectionNote(body, heading, note string) string {
 	return strings.TrimRight(body, "\n") + "\n\n## " + heading + "\n\n" + strings.TrimSpace(note) + "\n"
 }
 
+func replaceSection(body, heading, content string) string {
+	matches := headingRE.FindAllStringSubmatchIndex(body, -1)
+	for i, m := range matches {
+		name := strings.TrimSpace(body[m[2]:m[3]])
+		if !strings.EqualFold(name, heading) {
+			continue
+		}
+		start := m[1]
+		end := len(body)
+		if i+1 < len(matches) {
+			end = matches[i+1][0]
+		}
+		before := strings.TrimRight(body[:start], "\n")
+		after := strings.TrimLeft(body[end:], "\n")
+		replacement := strings.TrimSpace(content)
+		if after == "" {
+			return before + "\n\n" + replacement + "\n"
+		}
+		return before + "\n\n" + replacement + "\n\n" + after
+	}
+	return strings.TrimRight(body, "\n") + "\n\n## " + heading + "\n\n" + strings.TrimSpace(content) + "\n"
+}
+
 func extractExecutionSpec(body string) (ExecutionSpec, error) {
 	return extractExecutionSpecFromSection(body, "Execution Spec")
 }
