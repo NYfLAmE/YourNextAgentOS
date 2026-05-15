@@ -68,6 +68,10 @@ _Avoid_: unapproved mailbox event, browser-history event, implicit external sign
 A task-scoped Git worktree where the Runtime runner may read and write files for an approved task.
 _Avoid_: main working tree, global project permission, user home directory
 
+**Session Worktree**:
+An interactive AI session's dedicated Git worktree and branch for read-write project work outside another session's working tree.
+_Avoid_: shared branch, dirty main working tree, copied uncommitted diff, Execution Workspace
+
 **Command Template**:
 An approved shell command shape whose structure is fixed and whose parameters are constrained by the task plan.
 _Avoid_: arbitrary shell access, one-off untracked command, command family
@@ -100,6 +104,7 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 - **Plan-Approved Autonomy** is granted by an **Approval Record**
 - **Core Tools** are available before **Fat Agent Extension Points**
 - **Execution Workspaces** bound the file impact of approved command execution
+- **Session Worktrees** bound the file impact of interactive AI development sessions
 - **Command Lists**, **Command Templates**, and **Env Profiles** are approved at task scope
 - **Private Runtime Logs** record execution history outside the **Control Plane**
 
@@ -117,6 +122,9 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 > **Dev:** "Can the model draft a task from this issue?"
 > **Domain expert:** "Yes, through **LLM Drafting**, but the model receives only the approved **LLM Payload** and produces a **Runtime Task Draft** for review."
 
+> **Dev:** "Can a second AI session edit the branch that another session is using?"
+> **Domain expert:** "No. It should create its own **Session Worktree** from an explicit base branch, or stay read-only until the owning session publishes its work."
+
 ## Flagged ambiguities
 
 - "Agent OS", "AgentOS", and "YourNextAgentOS" were used to mean both the handbook and the automation layer; resolved: **Personal Agent OS** is the handbook and **Personal Agent OS Runtime** is its future execution layer.
@@ -125,3 +133,4 @@ _Avoid_: Control Plane artifact, report source by default, project scratch file
 - "Shell approval" was used to mean both arbitrary command access and repeatable task commands; resolved: repeatable execution approves a constrained **Command Template**, not unrestricted shell access.
 - "Runtime Task" was considered as a possible Issue replacement; resolved: a **Runtime Task** is an execution request for a parent Issue or Plan, not a replacement for engineering delivery artifacts.
 - "LLM drafting" was considered as a possible Builder shortcut; resolved: **LLM Drafting** creates reviewable **Runtime Task Drafts** only and does not execute commands or modify files.
+- "Worktree" was used for both Runtime execution and interactive AI development; resolved: **Execution Workspace** is for approved Runtime Tasks, while **Session Worktree** is for interactive AI sessions.

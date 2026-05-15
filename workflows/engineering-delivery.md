@@ -100,6 +100,11 @@ Builder executes only inside the approved issue or plan.
 Rules:
 
 - inspect `git status` before edits
+- perform read-write interactive work inside a Session Worktree, not another session's working tree
+- declare the base branch or commit before creating a Session Worktree
+- use `/home/ZykLyj/yjdev/worktrees/<repo>/<branch-slug>/` as the default Session Worktree root
+- treat one branch as writable by one AI session at a time; other sessions stay read-only or create their own branch
+- wait for another session to publish a commit, push, or explicit patch before depending on its uncommitted changes
 - do not touch unrelated dirty files
 - use project-local patterns
 - write focused tests for behavior changes

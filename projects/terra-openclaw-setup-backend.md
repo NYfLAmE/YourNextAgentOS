@@ -32,6 +32,9 @@ docs/modelconfig/implementation/claude/
 - All claims must be based on source code, docs, command output, tests, or explicit user statements.
 - Inspect `git status` before edits.
 - Do not touch unrelated dirty files.
+- Use an independent Session Worktree for any read-write interactive AI work.
+- Create Terra Session Worktrees under `/home/ZykLyj/yjdev/worktrees/TerraOpenclawSetupBackend/<branch-slug>/` from an explicit base; default to local `dev` unless the user specifies another base.
+- Treat one Terra branch as writable by one AI session at a time.
 - Code/config/script/behavior changes require docs sync review.
 - If a semantic change affects API docs or Swagger, regenerate and validate the docs as the project requires.
 - Commit messages should use `type(scope): summary` plus a useful body.
@@ -72,3 +75,5 @@ Do not infer sibling behavior from Terra docs alone.
 ## Current Dirty-Tree Rule
 
 If this adapter is used while Terra or packaging worktrees have unrelated modifications, leave them untouched unless the active approved plan explicitly includes those files.
+
+If the current Terra branch or worktree is owned by another session, the active session may inspect it read-only but must not edit files, run formatters, stash, commit, checkout, pull, reset, or otherwise mutate that branch. Create a separate Session Worktree and branch for read-write work.
