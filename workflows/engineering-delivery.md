@@ -111,6 +111,20 @@ Rules:
 - update docs when code, config, script, API, or workflow semantics change
 - use sub-agents only for independent work scopes or review
 
+### Session Worktree Integration Flow
+
+Use one integration worktree for the integration branch, such as `dev` or `main`, and separate Session Worktrees for feature or bugfix branches.
+
+Default flow:
+
+1. Confirm the integration worktree is on the intended integration branch and has no tracked changes.
+2. Create a feature branch and Session Worktree from the integration branch.
+3. Do implementation, validation, docs sync, and commit work inside the feature Session Worktree.
+4. Return to the integration worktree and merge the completed feature branch.
+5. Continue work in other feature Session Worktrees only after manually merging the updated integration branch, or rebasing when the project explicitly allows it.
+
+Merging a feature branch into the integration branch updates the shared Git ref. It does not automatically rewrite the working tree or index of other Session Worktrees.
+
 ## Review
 
 Reviewer checks:

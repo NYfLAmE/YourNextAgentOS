@@ -35,6 +35,8 @@ docs/modelconfig/implementation/claude/
 - Use an independent Session Worktree for any read-write interactive AI work.
 - Create Terra Session Worktrees under `/home/ZykLyj/yjdev/worktrees/TerraOpenclawSetupBackend/<branch-slug>/` from an explicit base; default to local `dev` unless the user specifies another base.
 - Treat one Terra branch as writable by one AI session at a time.
+- Treat `/home/ZykLyj/yjdev/TerraOpenclawSetupBackend` on local `dev` as the default integration worktree; use it for creating feature worktrees, merging, validation, and push rather than feature development.
+- After a feature branch merges into local `dev`, other Terra Session Worktrees must explicitly merge `dev` or use an approved rebase flow before assuming they have the latest integrated files.
 - Code/config/script/behavior changes require docs sync review.
 - If a semantic change affects API docs or Swagger, regenerate and validate the docs as the project requires.
 - Commit messages should use `type(scope): summary` plus a useful body.
