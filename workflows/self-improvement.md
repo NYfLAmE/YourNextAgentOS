@@ -25,6 +25,12 @@ Every feedback record must include:
 - proposed action
 - whether it was auto-applied or needs approval
 
+Feedback records created from Codex conversation feedback should live under:
+
+```text
+.scratch/self-improvement/feedback/
+```
+
 ## Risk Classification
 
 Low-risk feedback:
@@ -69,6 +75,7 @@ The workflow should improve:
 - date accuracy
 - actionability
 - reduced rework
+- clearer first-pass mental models before exhaustive reference detail
 - clearer approval points
 - better separation of facts, assumptions, and decisions
 

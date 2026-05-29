@@ -36,6 +36,25 @@ Exit criteria:
 - in-scope and out-of-scope boundaries are known
 - important constraints are recorded
 
+## Communication Efficiency
+
+When explaining non-trivial technical behavior to a human, use progressive disclosure before reference detail.
+
+Required shape:
+
+1. Start with a one-sentence mental model in the user's vocabulary.
+2. Give the core process in 2-4 semantic chunks. Each chunk should group low-level fields, commands, or implementation details into one meaningful operation, such as "encrypt the body with AES-GCM" before listing `ciphertext`.
+3. Then map those chunks to exact endpoints, fields, files, commands, or error cases.
+4. Put exhaustive schema tables, edge cases, and code after the mental model unless the user explicitly asks for reference detail first.
+
+For API, protocol, security, or architecture explanations:
+
+- explain "what happens" and "who owns which data/key/state" before listing fields
+- prefer task verbs over inventory phrasing, for example "generate key -> encrypt body -> wrap key -> send envelope"
+- keep the first-pass flow restatable in three bullets or fewer
+- separate explanation from reference; do not bury the main process inside a field-by-field table
+- preserve factual precision by moving constraints and failure modes into the follow-up detail layer, not by omitting them
+
 ## Plan
 
 Use Planner to create a decision-complete plan.
