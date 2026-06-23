@@ -22,6 +22,7 @@ For Terai product direction, beta scope, cross-repo onboarding, `terai_ye` compa
 2. Read only the sidebar files needed for the question:
    - `00-glossary-and-context.md` for names and mental model.
    - `01-reading-order.md` for how to continue reading.
+   - `17-current-service-chain-and-module-map-2026-06-18.md` for the current `serve` / `Supervisor` / parent-side `Worker` / worker `child` / `agent` service chain and module boundaries.
    - `02-architecture-map.md` for system maps.
    - `03-module-notes/*.md` for subsystem summaries.
    - `04-line-reading-log.md` for coverage and gaps.
@@ -52,10 +53,11 @@ Borrow teaching principles from `$teach` without creating the full `teach` lesso
 
 1. Identify whether the user asks for orientation, a source trace, a concept explanation, a risk review, or next-step reading guidance.
 2. Ground the answer in sidebar context first, then verify high-risk or changing facts in current source.
-3. When explaining a flow, map it top-down before diving into files:
-   `cmd/tos-agentd -> config/auth/httpapi -> worker -> agent -> tools/mcp/skill/llm -> session/scheduler/channel/clawhub -> web/src -> debian/packaging`.
-4. Do not mutate `tafs`. For implementation plans, keep changes outside `tafs` unless the user explicitly approves editing the mirror.
-5. If a question exposes a reusable preference, explanation strategy, repeated confusion, or useful Q&A pattern, update the mentor memory or the relevant sidebar learning record.
+3. When explaining the current service chain, read `tafs_sidebar/17-current-service-chain-and-module-map-2026-06-18.md` first, then verify changing facts against source. Use this top-down path before diving into files:
+   `cmd/tos-agentd serve -> httpapi -> worker.Supervisor -> parent-side Worker -> worker child -> agent.Runner -> llm.Provider/tools.Registry -> session/scheduler/channel/clawhub -> web/src -> debian/packaging`.
+4. After any current-source analysis, do a docs-sync pass. If there is a new behavior fact, architecture conclusion, bug/risk, or stale sidebar statement, update the closest `tafs_sidebar` document in the same turn. If nothing durable changed, state why no sidebar update was needed.
+5. Do not mutate `tafs`. For implementation plans, keep changes outside `tafs` unless the user explicitly approves editing the mirror.
+6. If a question exposes a reusable preference, explanation strategy, repeated confusion, or useful Q&A pattern, update the mentor memory or the relevant sidebar learning record.
 
 ## Self-Evolution Notes
 
