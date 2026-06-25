@@ -65,6 +65,15 @@ Do not infer formal backend architecture from `terai_ye`. Use it for UI/product-
 - 先场景后术语（2026-06-24 用户反馈强化）：向人解释任何概念、设计、机制或选项前，先用一两句白话说清“这是什么业务场景下的什么问题、不做会怎样”，再说做法，最后才给接口名/字段/标识符。每个英文或专有术语（如 `flat threshold`、`pair-safe`、`cooldown`、`snapshot`）首次出现必须就地用中文解释；不要一次抛出多个未解释的术语——宁可多一句场景，也不要多一个生词。
 - Keep architecture writing source-backed and precise, but do not make the wording more bookish than necessary.
 
+## Teaching & Growth Rules（默认按初学者讲 + 每日可学）
+
+> 2026-06-25 用户定夺（全局规则，已同步进 `personal-agent-os` README `Operating Principles` 与 `.scratch/self-improvement/feedback/2026-06-25-beginner-default-and-daily-learning.md`）。这是 `先场景后术语` 的扩展，适用于所有解释，不限架构文档。
+
+- 默认用户是刚毕业的后端工程师，不是专家（treat the user as a beginner, not an expert）。引入任何新概念、技术名词或行业术语时，默认用户没接触过：先用一两句白话讲清"这是什么场景下的什么问题、不做会怎样"，再给术语，且每个术语首次出现就地中文解释——绝不一次抛出多个未解释的生词；宁可多一句场景，也不要多一个生词。
+- 协作要同时解决两类问题：当前问题（项目 / 技术）+ 用户的长期成长。每次协作都应让用户学到能内化的东西，而不是只交付一段他无法吸收、形不成个人竞争力的输出；可执行结论与可理解原理一起给。
+- 当工作暴露真实的知识盲区 / 经验盲区时，默认把它整理成简明、可回看的记录——优先用项目 `learning/` 区（如 `tafs_sidebar/learning/` 的 `learning-records/` + `reference/`，并按需补 `GLOSSARY.md`），或走 `teach` skill——让用户能复习、内化，在 AI 时代保住基本学习与成长能力。
+- 不因为模型/智能体"能直接给答案"就跳过解释或跳过沉淀；解释清楚、留下记录，本身就是协作目标的一部分。
+
 ## Module Design & Decomposition Rules（模块设计与拆分规范）
 
 > 2026-06-25 用户定夺。适用于 Terai/`tafs` 所有模块的设计、拆分、命名与评审，用于终结“模块怎么切、职责归谁”的反复扯皮。每条附 Terai 现状示例，便于他人据现状直接判断。
@@ -143,6 +152,7 @@ Do not use this rule for pure current-source fact lookup, obvious small wording 
 - AI search / Terai search integration: `tafs_sidebar/19-ai-search-service-integration-guide-2026-06-21.md`, `tafs_sidebar/11-terai-current-facts.md`, `tafs_sidebar/18-terai-target-architecture-task-record-2026-06-18.md`. Current route (2026-06-25, see `25-terai-capability-removal-ddd-redivision-2026-06-25.md`): `ai_search` is the `搜索`(Search) feature subdomain — UI-first via its REST controller (trusted backend/user injection), then exposed to the model via the subdomain `agent 工具面`; every model-initiated call routes through `运行编排`→`运行治理` (no bypass). The terms `Capability Module` / `CapabilityRuntime` / `UI|Agent Capability Surface` are removed.
 - Context / memory / session architecture: `tafs_sidebar/21-terai-context-memory-module-2026-06-23.md`, `tafs_sidebar/18-terai-target-architecture-task-record-2026-06-18.md`, `tafs_sidebar/20-terai-observability-module-2026-06-22.md`. Current route is `Context & Memory Module` with `Session Domain` / `Context Domain` / `Memory Domain`; V1 uses `RunEvent/EventLog` as AgentRun fact source, `Conversation Display Projection` for UI history, and lightweight `ContextAnchor` instead of full `ContextSnapshot`. `Prompt Assembly Module` is a sibling module: `Prompt Rendering Pipeline` consumes `ContextPackage` and produces `PromptBundle`; older docs that mention `PromptContext Pipeline` should be read as this rendering pipeline.
 - 模块设计与拆分 / capability 移除后的模块图：`tafs_sidebar/25-terai-capability-removal-ddd-redivision-2026-06-25.md`（权威）。`Capability Module` 与 `Non-Capability Module` 已移除：功能归各功能子域（REST controller + `agent 工具面`）、模型工具唯一咽喉 `运行编排`、治理 `运行治理`、工具来源 `能力来源`、定时任务 `任务调度`；判模块怎么切见本 SKILL 的 `Module Design & Decomposition Rules`。
+- 新需求接入 / 架构演进 / 何时怎么新建模块 / 防漂移机检：`tafs_sidebar/26-terai-arch-evolvability-methodology-2026-06-25.md`（落点决策树两轴 + 新建模块 SOP「适配器优先」+ 预留位置盘点 + 机检规格；与 `22` Tier1、`23` R/S、`25` 模块图与不变量、本 SKILL litmus/必要性检查配套。新需求频繁变动时的"怎么接住"流程入口）。
 - Frontend/demo comparison: `terai_ye_sidebar/INDEX.md`, `terai_ye_sidebar/02-architecture-map.md`, `terai_ye_sidebar/05-tafs-comparison.md`, then current `terai_ye` source.
 - Coding conventions / Go 实现参考（重构落地阶段）: `tafs_sidebar/terai_code_guide/golang_code_guideline.md`（公司 Go 规范）、`go-modern-guidelines`（现代 Go 习语，按 `go.mod` 版本）、本地 `adk-go`（Google 官方 Go agent 框架，`adk-go-skill` 上手）。adk-go 仅作 Go runtime / 接口 / 包结构参考，不整体复制为内核（见 `16-terai-reference-stack-convergence-2026-06-17.md`）。
 

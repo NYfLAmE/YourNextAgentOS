@@ -67,6 +67,8 @@ Both this repository and the journal repository use local Git now. After the Git
 - Plan-approved autonomy: after a detailed plan is approved, agents may execute inside that plan without repeated approvals.
 - Risk-based approval: high-risk side effects, scope changes, and policy changes stop for human approval.
 - Latest low-risk feedback wins: low-risk template or wording feedback may update the workflow automatically; high-risk feedback becomes a pending decision.
+- Beginner-default communication: by default treat the user as a junior backend engineer; introduce every new concept, technical term, or industry term as if unfamiliar — give a one-sentence plain-language scenario first, then the term, and never stack multiple unexplained terms (see also Communication Efficiency in `workflows/engineering-delivery.md`).
+- Growth is a first-class outcome: every collaboration must serve the user's long-term learning, not only task output; when work surfaces a real knowledge gap, capture it as a concise, reviewable record (the `teach` skill or a project `learning/` area) so the user internalizes it and keeps building durable personal competence. Pair every actionable conclusion with the understandable reasoning behind it.
 
 ## Core Artifact Fields
 
