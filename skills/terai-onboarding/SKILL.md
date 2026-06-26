@@ -129,6 +129,21 @@ Each delegated research result must be traceable and must separate `Fact`, `Infe
 
 Do not use this rule for pure current-source fact lookup, obvious small wording edits, user instructions that explicitly skip external/reference research, or cases where no mature reference source is available. If this rule is skipped for an architecture topic, state why.
 
+## Naming & Concept Research Rules（命名与概念引入研究流程）
+
+> 2026-06-26 用户定夺。适用于 Terai/`tafs` 后续引入新的模块名、包名、接口名、结构体名、事件名、DB 表名、领域概念名，尤其是 `agentRun` 这类会影响架构语言和代码边界的命名。
+
+在任何新命名进入 refactor plan、ADR、sidebar 或代码前，必须先走这个流程：
+
+1. **先判实体类型，再讨论名字。** 明确它是产品/领域概念、架构模块/子域、Go package、Go interface/struct、DTO/event、DB table、测试 helper，还是运行时实例。不要把“业务里的一个实体”和“承载它的 package/module”混成一件事。
+2. **先说场景和责任。** 用中文说明“这个东西解决哪个业务/工程问题，不引入会怎样”，再给候选英文标识符。
+3. **核对 Terai 当前语言。** 先读当前 `tafs` 源码、`11` 当前事实、`25` 模块图、`26` 演进方法论；`Capability Module` / `Non-Capability Module` 已移除，不能继续作为新命名的依据。
+4. **做参考调研。** 至少核对一个本地成熟源码参考（如 `{YJDEV}/adk-go`、`{YJDEV}/opencode`、`claude-code-analysis`）或一个官方/一手文档来源。架构级命名优先使用官方文档和本地源码，不用二手博客当权威。
+5. **给候选项和取舍。** 对每个候选说明实体类型、适用范围、优点、风险、与 Terai 现有语言的冲突点。
+6. **用户确认后才落名。** 未经用户确认，不得把新命名写入代码、ADR 或 refactor task 的批准版计划。确认后的命名必须写入对应 `refactor_tasks/<task>/plan.md`；若是架构级命名，还要同步到合适的 sidebar 事实/ADR/词表。
+
+示例：`agentRun` 首先应被判定为“一次 agent 运行实例 / execution instance”候选，而不是 package 或 module；它是否落成 `AgentRun`、`Invocation`、`Run`、`Execution`，以及 package 是否叫 `agentrun` / `runner` / `runtime` / 其他名字，必须经过上述研究和用户确认。
+
 ## Task Routing
 
 - Product requirement / new feature track: `terai-onboarding -> grill-with-docs -> to-prd -> to-issues -> triage -> tdd`. Use this for fuzzy product needs, user-facing features, scope discussions, or multi-agent/task-tracker coordination.
@@ -155,6 +170,16 @@ Do not use this rule for pure current-source fact lookup, obvious small wording 
 - 新需求接入 / 架构演进 / 何时怎么新建模块 / 防漂移机检：`tafs_sidebar/26-terai-arch-evolvability-methodology-2026-06-25.md`（落点决策树两轴 + 新建模块 SOP「适配器优先」+ 预留位置盘点 + 机检规格；与 `22` Tier1、`23` R/S、`25` 模块图与不变量、本 SKILL litmus/必要性检查配套。新需求频繁变动时的"怎么接住"流程入口）。
 - Frontend/demo comparison: `terai_ye_sidebar/INDEX.md`, `terai_ye_sidebar/02-architecture-map.md`, `terai_ye_sidebar/05-tafs-comparison.md`, then current `terai_ye` source.
 - Coding conventions / Go 实现参考（重构落地阶段）: `tafs_sidebar/terai_code_guide/golang_code_guideline.md`（公司 Go 规范）、`go-modern-guidelines`（现代 Go 习语，按 `go.mod` 版本）、本地 `adk-go`（Google 官方 Go agent 框架，`adk-go-skill` 上手）。adk-go 仅作 Go runtime / 接口 / 包结构参考，不整体复制为内核（见 `16-terai-reference-stack-convergence-2026-06-17.md`）。
+
+## Live LLM Test Rules（真实模型测试规则）
+
+> 2026-06-26 用户定夺。后续 Terai/`tafs` 涉及 LLM、provider、prompt、tool call、agent run、SSE 输出的测试计划，默认不能只靠 mock/fake；必须说明真实 provider 验证如何覆盖。
+
+- 单元测试可以使用 fake/mock，以便稳定验证边界条件、错误路径和快速回归；但只要改动触达 LLM-facing 行为，验收层必须包含真实 LLM provider smoke，除非当前环境不可达或用户明确豁免。
+- 每次 refactor plan 的 `Test Plan / 行为锁设计` 必须标注：哪些测试是 deterministic fake/mock，哪些测试是真实 provider，真实 provider 验证哪条业务语义，失败时如何区分代码问题、网络问题、模型服务时段限制和权限/密钥问题。
+- 真实模型配置只能通过环境变量、未追踪本地配置或用户当次输入注入；禁止把 API key、token、cookie、私钥、真实用户密码写入 SKILL、`tafs_sidebar`、repo 文件、日志或 refactor task 文档。
+- 当前用户指定的真实模型验收目标模型为 `deepseek-v4-pro`。endpoint 与密钥必须在运行时注入；密钥永不落盘。若 endpoint 需要持久记录，必须先确认它不是敏感信息且格式无误，再只记录非密文 endpoint。
+- 验证日志和文档可以记录 model id、测试场景、响应状态、错误类型、是否触达 provider、是否出现预期 SSE/tool event；不得记录密钥或含敏感内容的完整 prompt/response payload。
 
 ## Execution Rules
 
