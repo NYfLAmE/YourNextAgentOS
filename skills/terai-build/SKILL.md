@@ -76,6 +76,17 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 
 对用户解释时先场景后术语。首次出现的新词必须就地解释；如果解释不清业务场景和目标语义，先停下讨论。
 
+## Critical Review Gate
+
+任何用户或 agent 提出的需求、结论、接口、模块拆分、命名或实现方案，都要先做批判性复核，再进入 build brief：
+1. 它是否真实服务当前用户场景，还是只是为了实现而实现。
+2. 它是否过早抽象、浅层转发、重复已有模块职责，或扩大了当前小目标。
+3. 它是否把候选方案、参考事实、`tafs` 既有实现误当成 Terai 已确认目标。
+4. 是否存在更小、更深、更容易验证的接口或模块形态。
+5. 哪些判断来自用户假设，哪些来自 agent 推断，哪些来自源码/文档事实；推断必须标明。
+
+不要默认用户说的或 agent 自己说的就是合理的。先提出反例、风险和替代方案，再与用户对齐；但挑战必须服务于澄清需求和降低返工，不做无意义辩论。
+
 ## Feedback Hook
 
 自动分析用户问题和反馈，提炼可复用偏好。只在用户确认后修改 skill 或项目规则；修改后运行轻量校验（如 `personal-agent-os/scripts/manage-skills.sh verify`、`git diff --check`、相关 docs/CI 检查）。
