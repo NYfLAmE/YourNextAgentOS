@@ -30,6 +30,8 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 - 新需求落点 / 何时新建模块：用 `tafs_sidebar/26` 决策树（两轴：逻辑住哪 + 怎么被够到）。
 - 任何代码/架构/构建任务改动：先过业务语义门（目标业务场景、当前语义、Terai 目标语义、非目标、契约影响、测试证明），与用户对齐后再写 build brief；未对齐不得编码。
 - 新需求/新功能/新入口/新内部接口/新字段/新事件/新审计字段/新术语：先过接口与概念准入门（见下文），不得把未讨论过的名称、事件、字段或 tafs 既有设计当成 Terai 已确认上下文。
+- 新命名进入 build brief、docs 或代码前，必须先给候选项和取舍，让用户定夺；未经确认的名称只能标为候选。
+- 架构、契约、安全、DB、RPC/HTTP/SSE 协议、模块边界、命名等重要判断前，能从成熟实践获益时先做参考调研；优先指派独立子 agent，结果必须分清 Fact / Inference / Recommendation。
 - 写代码：`build brief（开工说明）→ 用户批准 → 落 docs/build_tasks/<task>/plan.md → contract-first/characterization → walking skeleton + 薄纵切 → make ci 全绿 → review → DoD → docs-sync → 结构化 commit`（见 `terai/docs/workflow.md`）。
 - 移植 Host Kernel：参考 `terai/docs/references/README.md` + `tafs_sidebar/17`/`03-module-notes`/`24` + `{YJDEV}/tafs` 源码（参考镜像）。
 
@@ -52,6 +54,7 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 - **信息不足或提问未获回答时先停下等用户，不替用户做选择。**
 - 每次执行代码/文档/skill 等文件改动并完成校验后，都要提交对应 Git commit，保证变更可追溯、可回滚；只 stage 当前任务相关文件，不夹带无关脏改；提交信息使用结构化格式 `type(scope): summary`，正文说明动机、范围、验证。push 远端仍需用户单独批准。
 - 每轮 Terai 协作后提炼用户反馈中的偏好/规则；若需要改 `terai-build` 或仓内工作规则，先说明变动、原因、影响范围，得到用户确认后再执行。
+- 指派子 agent 了解 Terai 上下文时，只能要求其通过本 `terai-build` skill 和 `terai/docs`/`terai/arch` 上手；不要让子 agent 使用 `terai-onboarding`，除非用户明确要求分析 `tafs` 参考或移植细节。
 
 ## Business Semantics Gate
 
@@ -75,6 +78,15 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 6. 准入状态：明确这是已确认目标、候选方案、参考事实，还是待调研问题；未确认的名称/字段/事件不得写入 build_task 批准版或代码。
 
 对用户解释时先场景后术语。首次出现的新词必须就地解释；如果解释不清业务场景和目标语义，先停下讨论。
+
+## Naming And Reference Research Gate
+
+新增模块名、包名、接口名、结构体名、字段名、事件名、DB 表名或领域概念名前，必须：
+1. 先说明场景和语义，再给 2-4 个候选名称；每个候选说明优点、风险、与 Terai 现有语言的冲突点。
+2. 由用户确认最终名称后，才能写入批准版 build brief、docs、glossary、arch 或代码。
+3. 对会影响长期架构语言或外部契约的命名，先做参考调研；来源优先官方文档、成熟产品/框架、本地源码或 Terai 权威文档。
+
+参考调研不是给所有小动作加重流程。纯源码事实核对、已确认规则的机械落地、小措辞修正可以跳过；但要在回复中说明跳过原因。调研结论必须区分事实、推断和建议，不能把业界做法直接等同于 Terai 目标。
 
 ## Critical Review Gate
 
