@@ -32,7 +32,7 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 - 新需求/新功能/新入口/新内部接口/新字段/新事件/新审计字段/新术语：先过接口与概念准入门（见下文），不得把未讨论过的名称、事件、字段或 tafs 既有设计当成 Terai 已确认上下文。
 - 新命名进入 build brief、docs 或代码前，必须先给候选项和取舍，让用户定夺；未经确认的名称只能标为候选。
 - 架构、契约、安全、DB、RPC/HTTP/SSE 协议、模块边界、命名等重要判断前，能从成熟实践获益时先做参考调研；优先指派独立子 agent，结果必须分清 Fact / Inference / Recommendation。
-- 写代码：`build brief（开工说明）→ 用户批准 → 落 docs/build_tasks/<task>/plan.md → contract-first/characterization → walking skeleton + 薄纵切 → make ci 全绿 → review → DoD → docs-sync → 结构化 commit`（见 `terai/docs/workflow.md`）。
+- 写代码：`build brief（开工说明）→ 用户批准 → 按 docs/build_tasks/_template/ 落 docs/build_tasks/<task>/plan.md → contract-first/characterization → walking skeleton + 薄纵切 → make ci 全绿 → review → DoD → docs-sync → 结构化 commit`（见 `terai/docs/workflow.md`）。
 - 移植 Host Kernel：参考 `terai/docs/references/README.md` + `tafs_sidebar/17`/`03-module-notes`/`24` + `{YJDEV}/tafs` 源码（参考镜像）。
 
 ## 不变量（不可违反，见 architecture.md/AGENTS.md）
@@ -78,6 +78,8 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 6. 准入状态：明确这是已确认目标、候选方案、参考事实，还是待调研问题；未确认的名称/字段/事件不得写入 build_task 批准版或代码。
 
 对用户解释时先场景后术语。首次出现的新词必须就地解释；如果解释不清业务场景和目标语义，先停下讨论。
+
+Approved 版 `plan.md` 不得把未确认的"建议 / 可能 / 暂定 / 后续看"写成执行策略；每个外部契约、内部接口、字段、事件、配置、测试和代码改动都必须能追溯到用户场景、目标语义、涉及文件和验收方式。涉及 provider/model、stream chunk、错误映射、真实 provider smoke、LLM SDK 或模型配置时，必须先单独对齐 LLM 语义；未对齐前只能写占位边界或阻塞点。
 
 ## Naming And Reference Research Gate
 
