@@ -5,6 +5,8 @@ description: Bootstrap factual onboarding and task execution for the Terai produ
 
 # Terai Onboarding
 
+> **2026-06-26 路线更新**：Terai 已转向 **greenfield 从零重建**（自包含 `terai` 仓库 `{YJDEV}/terai`；仅 AI 可变层从零，Host Kernel 移植自 `tafs`）。**新项目开发请用 `/terai-build` skill + `terai/docs`+`terai/arch`**。本 skill 降级为 **`tafs` 参考来源 / 移植期上手**（理解既有 `tafs` 代码、移植 Host Kernel 时用）；R/S·strangler·P0·10 步抽取·ff 同步等"在 `tafs` 上渐进重构"的工作法在 greenfield 下已退役。权威路线/结构/命名见 `tafs_sidebar/28-terai-greenfield-rebuild-and-workflow-2026-06-26.md`。
+
 ## Purpose
 
 Use this skill as the compact replacement for long Terai onboarding prompts. It is a bootstrap router and guardrail, not a fact boundary: current repo files, command output, tests, latest meeting records, and explicit user instructions win.
@@ -144,6 +146,21 @@ Do not use this rule for pure current-source fact lookup, obvious small wording 
 
 示例：`agentRun` 首先应被判定为“一次 agent 运行实例 / execution instance”候选，而不是 package 或 module；它是否落成 `AgentRun`、`Invocation`、`Run`、`Execution`，以及 package 是否叫 `agentrun` / `runner` / `runtime` / 其他名字，必须经过上述研究和用户确认。
 
+## Go 命名与结构规范（Naming & Structure Best Practice）
+
+> 2026-06-26 用户定夺（grill 收敛）。这是上面《命名与概念引入研究流程》的"怎么拼标识符"细则，适用于 Terai/`tafs` 所有新增 package / 类型 / 接口命名与放置。依据：Go 官方《Effective Go》+ Go 博客《Package names》(Sameer Ajmani 2015)、公司 Go 规范 §6.2/§6.3、本地 `adk-go`、SKILL《模块设计与拆分规范》。深解见 `tafs_sidebar/learning/learning-records/0004-go-interface-in-consumer-package.md` 与 `learning/GLOSSARY.md`。
+
+1. **包名 = 名词**：短、全小写、单个词、名词，命名"它拥有的领域概念"（正向命名）；禁下划线/驼峰、禁 catch-all（`util`/`common`/`misc`/`non-*`）、禁名词+动词拼接（如 `agentrun`）。
+2. **反结巴（stutter）**：类型名不重复包名前缀，前缀由包限定符提供 → `run.Request`（非 `run.RunRequest`）、`run.Store`（非 `run.RunStore`）。一个领域概念的"权威类型"住在与之同名的包里。
+3. **跨包可读性靠包限定符**，不靠在类型名里堆领域前缀。
+4. **缩写**：沿用既有缩写包名（`llm`/`mcp`，全小写），缩写在类型名里全大写（`LLMProfile`）。
+5. **构造器**：`New`/`NewXxx` 工厂；如 `run.New(...) *run.Orchestrator`（对齐 ADK `runner.New`）。
+6. **先判实体性质再命名**（沿用上节）：因包名已是 `run`，"一次运行实例"（步骤 2 才引入）不能叫 `run.Run`（结巴），用 `run.Instance`/`run.State`。
+7. **返回具体类型、接受接口**：实现方返回具体 struct（不预造 owner 侧接口）；接口按公司 §6.2 定义在**使用方(consumer)包**、只含用到的方法（Go 隐式实现）；唯有被广泛共享的通用契约（`io.Reader`/`llm.Provider`）才提升为 owner/共享包。架构不变量（如"唯一咽喉"）靠 depguard/arch-lint 的**路径规则**强制，不靠把实现做成 owner 侧接口。
+8. **统一语言映射**：每个架构模块（中文，如 `运行编排`）↔ 一个 Go 包（`run`）↔ 记入 glossary + `arch/modules.yml`；架构级命名落定后同步进 `arch/glossary-lock.txt`。
+
+已定锚点示例（2026-06-26）：`运行编排` 模块 → package `run`；类型 `run.Request`（原 `RunRequest`）/`run.Event`（步骤1为 `agent.Event` 别名）/`run.Store`（接口，consumer=run 内 Orchestrator）/`run.Orchestrator`（具体 struct，唯一咽喉）/`run.New(...)`。`Capability`/`Non-Capability` 已移除，不得作为新命名依据。
+
 ## Task Routing
 
 - Product requirement / new feature track: `terai-onboarding -> grill-with-docs -> to-prd -> to-issues -> triage -> tdd`. Use this for fuzzy product needs, user-facing features, scope discussions, or multi-agent/task-tracker coordination.
@@ -180,6 +197,26 @@ Do not use this rule for pure current-source fact lookup, obvious small wording 
 - 真实模型配置只能通过环境变量、未追踪本地配置或用户当次输入注入；禁止把 API key、token、cookie、私钥、真实用户密码写入 SKILL、`tafs_sidebar`、repo 文件、日志或 refactor task 文档。
 - 当前用户指定的真实模型验收目标模型为 `deepseek-v4-pro`。endpoint 与密钥必须在运行时注入；密钥永不落盘。若 endpoint 需要持久记录，必须先确认它不是敏感信息且格式无误，再只记录非密文 endpoint。
 - 验证日志和文档可以记录 model id、测试场景、响应状态、错误类型、是否触达 provider、是否出现预期 SSE/tool event；不得记录密钥或含敏感内容的完整 prompt/response payload。
+
+## Information & HITL Rule（需要更多信息就先停下，2026-06-26 用户定夺）
+
+> 全局协作规则。应同步进 `personal-agent-os` README 的 Operating Principles，供所有项目复用。
+
+任何时候只要你判断"要把事情继续做对，需要用户提供更多信息 / 确认 / 凭据 / 决策"，必须**立即停下**，用一两句话说清当前最新情况——已做到哪、卡在哪、为什么需要这条信息、缺它会怎样——然后**等用户提供后再继续**。
+
+- 不要在缺少必要信息时靠猜测硬往前冲，也不要"绕过去先做别的"来回避缺口；那会偏离意图、造成返工、降低开发质量。
+- 与 `23` §9 批准闸门互补：§9 管"改动前要批准"，本条管"信息不足时要先问"。
+- 例外：能从源码 / 命令输出 / 现有文档自查得到的，先自查（见 `grill-with-docs`："能从代码回答就别问"）；只有自查无法解决、且属于用户才知道的信息（端口/凭据/产品取舍/优先级）时，才停下来问。
+
+## 内外网协作与同步（Cross-net Sync，2026-06-26 用户定夺）
+
+> 详见 `tafs_sidebar/23` §13 + 逐条操作手册 `tafs_sidebar/27-internal-sync-runbook-2026-06-26.md`（内网可读）+ 仓库内 `tafs/docs/internal-sync-runbook.md`。
+
+- 机制：外网重构 `tafs` → 经桥接仓库 `sync`（gitlab.terramaster，内外网共通）git 同步 → 内网 `terai`；代码 git 搬运、不再手工 1:1 重写；**非硬性单向**（内网偶尔改码也可回外网）。
+- 内网可访问本 SKILL、`tafs_sidebar`、`personal-agent-os`——规则同一份，不在内网另立。
+- 硬约束（安全）：内网机密/密钥绝不进 `sync`/外网可见仓库；密钥运行时注入、永不落盘。
+- 提交信息卫生：经 `sync`/内网的提交须**内网中性**（无"外网/内外网"表述）、**无 co-author trailer**；agent 的 commit 包装器会自动注入该 trailer（`--amend` 也会重注入），故外网 sync 导入提交用 `git commit-tree` 生成干净提交。
+- 节奏：按里程碑增量同步；push 桥接/远端按 G8 #8 需用户批准。
 
 ## Execution Rules
 

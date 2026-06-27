@@ -40,6 +40,8 @@ Exit criteria:
 
 When explaining non-trivial technical behavior to a human, use progressive disclosure before reference detail.
 
+**Hard rule — explain by scenario before terminology (2026-06-24 user feedback).** Before introducing any concept, design, mechanism, or option, first answer in one or two plain sentences: *what real scenario triggers it, and what concretely goes wrong without it*; then say what it does; only then name interfaces, fields, or identifiers. Gloss every jargon/English term (e.g. `flat threshold`, `pair-safe`, `cooldown`, `snapshot`, `idempotent`) in plain language at first use. Never dump multiple unexplained terms — one extra sentence of scenario beats one more piece of jargon. Default to the user's language (Chinese here); keep only unavoidable identifiers in English, each with an inline gloss.
+
 Required shape:
 
 1. Start with a one-sentence mental model in the user's vocabulary.
