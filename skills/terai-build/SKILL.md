@@ -29,6 +29,7 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 
 - 新需求落点 / 何时新建模块：用 `tafs_sidebar/26` 决策树（两轴：逻辑住哪 + 怎么被够到）。
 - 任何代码/架构/构建任务改动：先过业务语义门（目标业务场景、当前语义、Terai 目标语义、非目标、契约影响、测试证明），与用户对齐后再写 build brief；未对齐不得编码。
+- 新需求/新功能/新入口/新内部接口/新字段/新事件/新审计字段/新术语：先过接口与概念准入门（见下文），不得把未讨论过的名称、事件、字段或 tafs 既有设计当成 Terai 已确认上下文。
 - 写代码：`build brief（开工说明）→ 用户批准 → 落 docs/build_tasks/<task>/plan.md → contract-first/characterization → walking skeleton + 薄纵切 → make ci 全绿 → review → DoD → docs-sync → 结构化 commit`（见 `terai/docs/workflow.md`）。
 - 移植 Host Kernel：参考 `terai/docs/references/README.md` + `tafs_sidebar/17`/`03-module-notes`/`24` + `{YJDEV}/tafs` 源码（参考镜像）。
 
@@ -62,6 +63,18 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 5. 用哪些 characterization/contract/golden/live smoke 证明语义成立。
 
 语义未对齐、DB 未 grill、冻结契约未批准时，先停下讨论，不得为了实现而实现。
+
+## Interface And Concept Gate
+
+凡是提出新的需求、功能点、HTTP 入口、worker RPC、Go struct/interface/function、字段、SSE/event、audit 字段、配置项、DB 表或新术语，必须先对齐：
+1. 服务什么用户场景，要实现什么可观察效果；不做会怎样。
+2. 目标语义：输入是什么、输出是什么、处理逻辑是什么、错误如何表达、哪些内容不得泄露或持久化。
+3. 外部契约：HTTP method/path/body/response/status/SSE 事件、RPC method/params/result/error、config/audit/DB schema 的候选形状。
+4. 内部接口：结构体/字段/函数/接口的入参出参、调用方必须知道的约束、依赖和测试面。按 `codebase-design` 的语言，接口不只是 type signature，而是调用方正确使用它必须知道的全部事实。
+5. 来源边界：Host Kernel 可借鉴/移植 `tafs`；AI 可变层（run/llm/governance/prompt/tool/search/session 等）必须基于 Terai 当前需求重新设计，不得因 `tafs` 已有实现就默认沿用。
+6. 准入状态：明确这是已确认目标、候选方案、参考事实，还是待调研问题；未确认的名称/字段/事件不得写入 build_task 批准版或代码。
+
+对用户解释时先场景后术语。首次出现的新词必须就地解释；如果解释不清业务场景和目标语义，先停下讨论。
 
 ## Feedback Hook
 
