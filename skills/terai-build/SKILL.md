@@ -57,6 +57,21 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 - 每轮 Terai 协作后提炼用户反馈中的偏好/规则；若需要改 `terai-build` 或仓内工作规则，先说明变动、原因、影响范围，得到用户确认后再执行。
 - 指派子 agent 了解 Terai 上下文时，只能要求其通过本 `terai-build` skill 和 `terai/docs`/`terai/arch` 上手；不要让子 agent 使用 `terai-onboarding`，除非用户明确要求分析 `tafs` 参考或移植细节。
 
+## Swagger Documentation Gate
+
+新增或修改前端可调用的 HTTP API 时，Swagger / OpenAPI 文档是同一契约的一部分，不能只改 handler 或 DTO：
+
+1. handler 上方必须同步维护 swaggo 注解；request/response DTO 必须有字段注释和必要的 `example` tag。复杂协议在 `@Description` 中给最小必要示例，示例必须来自当前 DTO/测试，不从旧文档复制。
+2. `@Router` 的 method/path 必须以实际 router 注册为准；review 时逐项核对 router、handler 注解和 build_task 契约，不能让 Swagger path 先行漂移。
+3. 普通 JSON API 默认使用 TOS response wrapper；Swagger 成功响应写成 `ResponseBody{data=<ConcreteData>}` 或 Terai 当时确认的等价 wrapper 类型，无业务 data 时写 wrapper 空 data，错误响应统一写 wrapper 错误对象。
+4. SSE / streaming 端点不套 TOS wrapper；Swagger 必须明确 `text/event-stream`、事件名、每个事件的 `data` payload，以及哪些错误发生在 stream 前、哪些通过 `failed` event 表达。
+5. async submit 与 job query 必须拆成不同 data schema；submit 只表示 accepted，不表示业务完成，job query 才表达 `status/progress/result/error`。
+6. handler 注解只表达 API contract；业务字段约束、默认值、example 放 DTO；真正的业务语义仍以 build_task/ADR/current-facts 为准。
+7. build_task 涉及 HTTP API 时，计划和验证项必须包含 Swagger 更新：运行 `swag init` 或 Terai 当时等价生成命令，并检查生成的 `docs/swagger.*` / `docs/docs.go` 是否有未提交 diff。
+8. Terai 的 Swagger 校验应 fail fast：生成失败、生成后有意外 diff、`go test ./...` 或 `make ci` 失败，都不能算任务完成。
+9. wrapper 例外必须显式列清单，例如 SSE、上游透传、文件下载；默认不要为方便实现新增隐式例外。
+10. Terra/OpenClaw 的 Swagger 规范可作为参考，但不能照搬 Terra 的 API 前缀、TOS 白名单、`super-login` 透传或 `swag init` 失败只 warning 的构建策略。
+
 ## Business Semantics Gate
 
 每次改代码或调整架构前，先用用户能判断业务目标的语言说明：
