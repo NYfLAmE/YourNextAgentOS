@@ -32,6 +32,7 @@ description: Onboard and drive greenfield development of the Terai multi-user AI
 - 新需求/新功能/新入口/新内部接口/新字段/新事件/新审计字段/新术语：先过接口与概念准入门（见下文），不得把未讨论过的名称、事件、字段或 tafs 既有设计当成 Terai 已确认上下文。
 - 新命名进入 build brief、docs 或代码前，必须先给候选项和取舍，让用户定夺；未经确认的名称只能标为候选。
 - 架构、契约、安全、DB、RPC/HTTP/SSE 协议、模块边界、命名等重要判断前，能从成熟实践获益时先做参考调研；优先指派独立子 agent，结果必须分清 Fact / Inference / Recommendation。
+- 大任务拆分门：当一个 build_task 同时跨多个模块、安全边界、LLM-facing 行为、HTTP/RPC/SSE 契约、凭据/权限、packaging，或预计需要多个 agent session 才能完成时，不得直接把整个 plan 升 Approved 后开写。先在 `docs/build_tasks/<task>/` 下补本地 `prd.md` 和 `issues.md`（除非仓库已有明确 issue tracker 并经用户批准发布远端 issue），把用户价值、验收边界、vertical slices、依赖关系、TDD seams 和 ready-for-agent 范围写清楚；PRD/issue briefs 只分解和治理已确认 build_task，不替代 `plan.md` 的架构契约。用户确认拆分后，再把对应 build_task 升 Approved 并按 issue/slice 执行。
 - 写代码：`build brief（开工说明）→ 用户批准 → 按 docs/build_tasks/_template/ 落 docs/build_tasks/<task>/plan.md → contract-first/characterization → walking skeleton + 薄纵切 → make ci 全绿 → review → DoD → docs-sync → 结构化 commit`（见 `terai/docs/workflow.md`）。
 - 移植 Host Kernel：参考 `terai/docs/references/README.md` + `tafs_sidebar/17`/`03-module-notes`/`24` + `{YJDEV}/tafs` 源码（参考镜像）。
 
