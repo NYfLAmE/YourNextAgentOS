@@ -1,210 +1,78 @@
 ---
 name: terai-build
-description: Onboard and drive greenfield development of the Terai multi-user AI agent platform backend (the self-contained `terai` Go repo). Use when working on the terai project — its architecture, modules, packages, build tasks, or when a fresh agent needs the terai project context. Terai is built from scratch (AI layer greenfield; Host Kernel ported from tafs). This skill is a thin router into the repo's own docs/arch; deep methodology lives in tafs_sidebar, global collaboration rules in personal-agent-os.
+description: Onboard and drive greenfield development of the Terai multi-user AI agent platform backend in the self-contained `terai` Go repo. Use for Terai architecture, modules, packages, build tasks, implementation, diagnosis, review, or when a fresh agent needs current project context. Terai builds the AI layer greenfield and ports only the Host Kernel from `tafs`.
 ---
 
 # Terai Build
 
 ## Purpose
 
-薄路由：把上手与开发指针指向 **`terai` 仓库自带的 `docs/` + `arch/`**，不在本 skill 复制项目知识。Terai 是 greenfield 从零构建（仅 AI 可变层从零，Host Kernel 移植自 `tafs`），整体后续作为内网 `terai` 新分支落地、切主线。
+Act as the thin Terai router. Project facts live in `terai/docs/` and `terai/arch/`; reusable engineering disciplines live in focused skills. Keep here only authority order, route selection, Terai overrides, invariants, and execution rules.
 
-## Quick Start
+## Quick start
 
-1. 默认仓库：`{YJDEV}/terai`（`{YJDEV}` = 本机 yjdev 工作区根，外网 `/home/ZykLyj/yjdev`）。
-2. 进仓改代码前先读 `terai/AGENTS.md`。
-3. 按顺序读仓内权威：
-   - `terai/docs/architecture.md` —— 目标架构与模块图 + 不变量。
-   - `terai/docs/workflow.md` —— greenfield 构建工作流（build brief 闸门、ADR、DoD、CI、HITL）。
-   - `terai/docs/current-facts.md` —— 项目当前事实（随开发生长）。
-   - `terai/arch/modules.yml` —— 模块→包+允许依赖的唯一事实源；`terai/arch/glossary-lock.txt` —— 命名/术语锁。
-   - `terai/docs/build_tasks/` —— 每个任务的批准方案/进度/复核（看当前进度从这里）。
-   - `terai/docs/glossary.md` —— 词表（先场景后术语）。
+1. Default repo: `{YJDEV}/terai` (`{YJDEV}` is the workspace root). Use it as the working directory; every relative path below is repo-root-relative.
+2. Before code or project-file changes, read `AGENTS.md`.
+3. Read the task-relevant authority in this order:
+   - `docs/architecture.md` — target architecture and invariants.
+   - `docs/workflow.md` — T0–T3 delivery, build brief, approval, DoD, and HITL.
+   - `docs/current-facts.md` — current implementation facts.
+   - `arch/modules.yml` and `arch/glossary-lock.txt` — module/dependency and naming authorities.
+   - `docs/build_tasks/` — approved plans, progress, evidence, and reviews.
+   - `docs/glossary.md` — project vocabulary.
 
-## Fact Priority
+## Fact priority
 
-当前用户指令 > 当前 `terai` 源码/命令输出/测试 > `terai/docs`(current-facts/adr/architecture) > 团队 sidecar `tafs_sidebar/` > 旧上下文。仓内 `docs/adr` + `arch/` 是落地权威；与 sidecar 冲突时以最新 ADR + 当前源码为准。
+Current user instruction > current `terai` source/command output/tests > current Accepted ADR and repo docs/arch > `tafs_sidebar/` > older context. `tafs` is a reference mirror for Host Kernel behavior, not the target authority for the greenfield AI layer.
 
-## Task Routing
+## Route selection
 
-- 新需求落点 / 何时新建模块：用 `tafs_sidebar/26` 决策树（两轴：逻辑住哪 + 怎么被够到）。
-- 任何代码/架构/构建任务改动：先过业务语义门（目标业务场景、当前语义、Terai 目标语义、非目标、契约影响、测试证明），与用户对齐后再写 build brief；未对齐不得编码。
-- 新需求/新功能/新入口/新内部接口/新字段/新事件/新审计字段/新术语：先过接口与概念准入门（见下文），不得把未讨论过的名称、事件、字段或 tafs 既有设计当成 Terai 已确认上下文。
-- 新命名进入 build brief、docs 或代码前，必须先给候选项和取舍，让用户定夺；未经确认的名称只能标为候选。
-- 架构、契约、安全、DB、RPC/HTTP/SSE 协议、模块边界、命名等重要判断前，能从成熟实践获益时先做参考调研；优先指派独立子 agent，结果必须分清 Fact / Inference / Recommendation。
-- 大任务拆分门：当一个 build_task 同时跨多个模块、安全边界、LLM-facing 行为、HTTP/RPC/SSE 契约、凭据/权限、packaging，或预计需要多个 agent session 才能完成时，不得直接把整个 plan 升 Approved 后开写。先在 `docs/build_tasks/<task>/` 下补本地 `prd.md` 和 `issues.md`（除非仓库已有明确 issue tracker 并经用户批准发布远端 issue），把用户价值、验收边界、vertical slices、依赖关系、TDD seams 和 ready-for-agent 范围写清楚；PRD/issue briefs 只分解和治理已确认 build_task，不替代 `plan.md` 的架构契约。用户确认拆分后，再进 `Pre-Start Review Gate`。
-- 开工前评审门（开工唯一标志）：任何 build_task 在 Draft→Approved 前必须过 `Pre-Start Review Gate`（见下文），强制指派至少一个独立只读子 agent 核验方案与Terai目标架构/目标效果零漂移；把评审 findings 收敛到位（Blocker 全修、Decision-needed 全部由用户拍板、`Open Questions / Blockers` 清空）后才能升 Approved、进入开工；未过门不得写代码。
-- 完成评审门（完成唯一标志）：任何build_task在实现、测试和docs-sync完成后，必须过`Review Gate`（见下文）。实际代码只要仍与当前已批准目标架构或目标效果漂移，就不得标记Done；先修复并重新评审。若是否改变目标架构或是否完成只能由用户决定，必须把事实、漂移、影响和选项讲清楚，由用户权威拍板。
-- 写代码：`build brief（开工说明）→ 用户批准 → Pre-Start Review Gate → Approved → contract-first/characterization → walking skeleton + 薄纵切 → make ci 全绿 → docs-sync → Review Gate → DoD → 结构化 commit`（见 `terai/docs/workflow.md`）。
-- 移植 Host Kernel：参考 `terai/docs/references/README.md` + `tafs_sidebar/17`/`03-module-notes`/`24` + `{YJDEV}/tafs` 源码（参考镜像）。
+Skills whose descriptions mark them as explicit-command workflows are user entrypoints: recommend them when useful, but never silently invoke them from this skill. A normal “develop Terai” request still follows the same discipline directly through `terai-build`.
 
-## 不变量（不可违反，见 architecture.md/AGENTS.md）
+| Situation | Route | Terai result |
+| --- | --- | --- |
+| Read, explain, or locate current behavior | `terai-build` only | Rebuild facts from repo authority; no mutation. |
+| Fuzzy requirement or naming/contract decision | Apply the alignment gates; suggest `/grill-with-docs` when the user wants a dedicated session | Decisions land before a build brief; independent questions may be batched. |
+| Huge effort whose route is still obscured by fog | Continue alignment/research; mention `/wayfinder` only with its Terai limitation | Do not persist a map until the user approves how parent/child investigations map to Terai's existing authority. Do not disguise implementation as wayfinding. |
+| T3 work whose destination is already clear | Apply `to-spec` semantics to the mandatory PRD; suggest `/to-spec` as the explicit packaging command | Split the epic into multiple build tasks. Apply `to-tickets` semantics and suggest `/to-tickets` only when multi-party collaboration requires `issues.md`. |
+| Approved build task or frontier ticket | Suggest `/implement` | Implement one approved slice with `tdd`, validation, docs sync, review, and commit. |
+| Bug, failing test, incident, or regression | Use `diagnose` (the local compatibility name for upstream `diagnosing-bugs`) | Build a tight red-capable loop, minimise, and diagnose. Only an authorized fix continues through the applicable T1/T2 gates. |
+| Important external architecture, protocol, security, or naming evidence | Use `research` with primary sources | Treat findings as evidence, not Terai decisions; main agent re-verifies load-bearing claims. |
+| Unknown state/logic or UI shape that needs a concrete answer | Use `prototype` | Keep it isolated and throwaway; capture the verdict, then design production work through normal gates. |
+| Implementation completion | Use `code-review` as one input to the Terai Review Gate | Standards and Spec axes do not replace Architecture/Effect and risk-specific review. |
 
-唯一咽喉（模型工具调用经 run→governance→dispatch，子域工具面不可旁路）；身份后端注入；LLM SDK 仅 `internal/llm`；不引入 Shared Kernel/common/util/全局 coordinator。
+`tdd`, `domain-modeling`, and `codebase-design` are reusable disciplines under these routes. `teach` and general productivity skills stay outside the Terai delivery path.
 
-## 规则边界
+## Terai overrides for upstream skills
 
-- **项目专属**（架构/工作流/命名/结构/防漂移）：本 skill + `terai/docs` + `terai/arch`。
-- **全局协作规则**（教学与成长、HITL/信息不足先停、Live LLM 测试、安全不落密钥）：`personal-agent-os`。
-- **决策史与方法论**：团队 sidecar `tafs_sidebar/`（`28` 路线/结构/命名、`26` 演进、`25` 模块图、`22` 防漂移）。
+1. **No generic setup in Terai.** Do not run raw `/setup-matt-pocock-skills`; it may create `.scratch/`, `CONTEXT.md`, or `docs/agents/` as competing authorities.
+2. **One task authority.** Terai keeps plans and work records in `docs/build_tasks/<task>/`. For T3, `to-spec` semantics produce the required existing `prd.md`; the epic is split into multiple build tasks. Only multi-party collaboration activates `to-tickets` semantics and the existing `issues.md`. Do not create a second tracker tree.
+3. **Draft before ready.** A generated spec or ticket is Draft. Only the parent build task passing Pre-Start Review, clearing Blockers and Decision-needed findings, can make a slice ready for implementation.
+4. **Plan remains the contract.** Specs and tickets decompose confirmed work; they never replace the approved `plan.md`, ADR, frozen contracts, or architecture authority.
+5. **One frontier slice at a time.** `implement` may start only from an Approved task and a fixed base commit. It must preserve unrelated dirty work, use pre-agreed seams, run `make ci` and applicable real-provider/device smoke, sync docs, pass the Terai Review Gate, then commit.
+6. **Review has additional axes.** Generic `code-review` supplies Standards and Spec. Terai additionally checks Architecture/Effect; auth, secret, DB, tool execution, frozen contracts, or LLM-facing work also gets the appropriate security/evidence review.
+7. **Use Terai language stores.** `domain-modeling` writes resolved terms to `docs/glossary.md`, architecture identifiers to `arch/glossary-lock.txt`, and durable trade-offs to `docs/adr/` only after the naming and approval gates. Do not create a generic `CONTEXT.md`.
+8. **Bound research and prototypes.** Research must record source versions and separate Fact/Inference/Recommendation. Prototypes use no real secrets or production side effects and cannot prove production readiness.
+9. **Generated tickets skip triage.** `to-tickets` output is already decomposed work; use `triage` for incoming external/raw requests, not as a mandatory hop after ticket generation.
+10. **Wayfinder is not yet mapped.** Terai has no approved parent-map/child-investigation representation. Until the user approves a workflow migration or explicit mapping, do not let `wayfinder` create `.scratch` files or repurpose `docs/backlog/` / `docs/build_tasks/`; use bounded alignment and `research` instead.
 
-## Execution Rules
+## Mandatory gate reference
 
-- 默认中文；命令/路径/标识符用英文。先场景后术语，默认按初学者讲。
-- 用证据：源码、命令输出、测试、仓内 docs。
-- 改"冻结契约"(HTTP/SSE/表/RPC)、改 DB、push 远端、改内网落地 —— 必须先取得用户批准。
-- 绝不持久化密钥/token/cookie/私钥/真实密码；真实模型配置运行时注入。
-- **信息不足或提问未获回答时先停下等用户，不替用户做选择。**
-- 每次执行代码/文档/skill 等文件改动并完成校验后，都要提交对应 Git commit，保证变更可追溯、可回滚；只 stage 当前任务相关文件，不夹带无关脏改；提交信息使用结构化格式 `type(scope): summary`，正文说明动机、范围、验证。push 远端仍需用户单独批准。
-- 每完成一个对齐点并完成文档更新、验证、commit 后，不得只给"下一步建议"并等待用户输入；必须在同一轮直接进入下一批待对齐点，按模板说明场景、目标语义、候选契约和拍板问题。若多个 open questions/blockers 之间没有前后依赖，可以一次性成组对齐；若必须先回答 A 才能判断 B，则仍逐点收敛。只有用户明确要求暂停/只看状态，或下一步涉及必须单独批准的代码实现、skill 修改、高风险契约变更时，才停下等待。
-- 每轮 Terai 协作后提炼用户反馈中的偏好/规则；若需要改 `terai-build` 或仓内工作规则，先说明变动、原因、影响范围，得到用户确认后再执行。
-- 指派子 agent 了解 Terai 上下文时，只能要求其通过本 `terai-build` skill 和 `terai/docs`/`terai/arch` 上手；不要让子 agent 使用 `terai-onboarding`，除非用户明确要求分析 `tafs` 参考或移植细节。
+Before any formal recommendation, alignment decision, build-task Draft→Approved transition, code/project-doc/skill change, or completion claim, read [references/gates.md](references/gates.md) completely and apply every relevant gate. For read-only factual answers, load only the task-relevant repo authority unless the answer itself proposes a decision.
 
-## Swagger Documentation Gate
+## Invariants
 
-新增或修改前端可调用的 HTTP API 时，Swagger / OpenAPI 文档是同一契约的一部分，不能只改 handler 或 DTO：
+- Model tool calls pass through `run → governance → dispatch`; no domain tool surface bypasses the chokepoint.
+- Execution identity is injected by the authenticated backend.
+- LLM SDK imports stay in `internal/llm`.
+- Do not introduce Shared Kernel, `common`, `util`, or a global coordinator.
 
-1. handler 上方必须同步维护 swaggo 注解；request/response DTO 必须有字段注释和必要的 `example` tag。复杂协议在 `@Description` 中给最小必要示例，示例必须来自当前 DTO/测试，不从旧文档复制。
-2. `@Router` 的 method/path 必须以实际 router 注册为准；review 时逐项核对 router、handler 注解和 build_task 契约，不能让 Swagger path 先行漂移。
-3. 普通 JSON API 默认使用 TOS response wrapper；Swagger 成功响应写成 `ResponseBody{data=<ConcreteData>}` 或 Terai 当时确认的等价 wrapper 类型，无业务 data 时写 wrapper 空 data，错误响应统一写 wrapper 错误对象。
-4. SSE / streaming 端点不套 TOS wrapper；Swagger 必须明确 `text/event-stream`、事件名、每个事件的 `data` payload，以及哪些错误发生在 stream 前、哪些通过 `failed` event 表达。
-5. async submit 与 job query 必须拆成不同 data schema；submit 只表示 accepted，不表示业务完成，job query 才表达 `status/progress/result/error`。
-6. handler 注解只表达 API contract；业务字段约束、默认值、example 放 DTO；真正的业务语义仍以 build_task/ADR/current-facts 为准。
-7. build_task 涉及 HTTP API 时，计划和验证项必须包含 Swagger 更新：运行 `swag init` 或 Terai 当时等价生成命令，并检查生成的 `docs/swagger.*` / `docs/docs.go` 是否有未提交 diff。
-8. Terai 的 Swagger 校验应 fail fast：生成失败、生成后有意外 diff、`go test ./...` 或 `make ci` 失败，都不能算任务完成。
-9. wrapper 例外必须显式列清单，例如 SSE、上游透传、文件下载；默认不要为方便实现新增隐式例外。
-10. Terra/OpenClaw 的 Swagger 规范可作为参考，但不能照搬 Terra 的 API 前缀、TOS 白名单、`super-login` 透传或 `swag init` 失败只 warning 的构建策略。
+## Execution rules
 
-## Business Semantics Gate
-
-每次改代码或调整架构前，先用用户能判断业务目标的语言说明：
-1. 谁在什么场景下要做什么。
-2. 当前语义是什么（移植 Host Kernel 时必须说明 `tafs` 当前行为；greenfield 模块说明无当前语义）。
-3. Terai 目标语义是什么，明确不做什么。
-4. 会影响哪些契约（HTTP/SSE/RPC/DB/config/audit）。
-5. 用哪些 characterization/contract/golden/live smoke 证明语义成立。
-
-语义未对齐、DB 未 grill、冻结契约未批准时，先停下讨论，不得为了实现而实现。
-
-## Interface And Concept Gate
-
-凡是提出新的需求、功能点、HTTP 入口、worker RPC、Go struct/interface/function、字段、SSE/event、audit 字段、配置项、DB 表或新术语，必须先对齐：
-1. 服务什么用户场景，要实现什么可观察效果；不做会怎样。
-2. 目标语义：输入是什么、输出是什么、处理逻辑是什么、错误如何表达、哪些内容不得泄露或持久化。
-3. 外部契约：HTTP method/path/body/response/status/SSE 事件、RPC method/params/result/error、config/audit/DB schema 的候选形状。
-4. 内部接口：结构体/字段/函数/接口的入参出参、调用方必须知道的约束、依赖和测试面。按 `codebase-design` 的语言，接口不只是 type signature，而是调用方正确使用它必须知道的全部事实。
-5. 来源边界：Host Kernel 可借鉴/移植 `tafs`；AI 可变层（run/llm/governance/prompt/tool/search/session 等）必须基于 Terai 当前需求重新设计，不得因 `tafs` 已有实现就默认沿用。
-6. 准入状态：明确这是已确认目标、候选方案、参考事实，还是待调研问题；未确认的名称/字段/事件不得写入 build_task 批准版或代码。
-
-对用户解释时先场景后术语。首次出现的新词必须就地解释；如果解释不清业务场景和目标语义，先停下讨论。
-
-Approved 版 `plan.md` 不得把未确认的"建议 / 可能 / 暂定 / 后续看"写成执行策略；每个外部契约、内部接口、字段、事件、配置、测试和代码改动都必须能追溯到用户场景、目标语义、涉及文件和验收方式。涉及 provider/model、stream chunk、错误映射、真实 provider smoke、LLM SDK 或模型配置时，必须先单独对齐 LLM 语义；未对齐前只能写占位边界或阻塞点。
-
-## Naming And Reference Research Gate
-
-新增模块名、包名、接口名、结构体名、字段名、事件名、DB 表名或领域概念名前，必须：
-1. 先说明场景和语义，再给 2-4 个候选名称；每个候选说明优点、风险、与 Terai 现有语言的冲突点。
-2. 由用户确认最终名称后，才能写入批准版 build brief、docs、glossary、arch 或代码。
-3. 对会影响长期架构语言或外部契约的命名，先做参考调研；来源优先官方文档、成熟产品/框架、本地源码或 Terai 权威文档。
-
-参考调研不是给所有小动作加重流程。纯源码事实核对、已确认规则的机械落地、小措辞修正可以跳过；但要在回复中说明跳过原因。调研结论必须区分事实、推断和建议，不能把业界做法直接等同于 Terai 目标。
-
-## Critical Review Gate
-
-任何用户或 agent 提出的需求、结论、接口、模块拆分、命名或实现方案，都要先做批判性复核，再进入 build brief：
-1. 它是否真实服务当前用户场景，还是只是为了实现而实现。
-2. 它是否过早抽象、浅层转发、重复已有模块职责，或扩大了当前小目标。
-3. 它是否把候选方案、参考事实、`tafs` 既有实现误当成 Terai 已确认目标。
-4. 是否存在更小、更深、更容易验证的接口或模块形态。
-5. 哪些判断来自用户假设，哪些来自 agent 推断，哪些来自源码/文档事实；推断必须标明。
-
-不要默认用户说的或 agent 自己说的就是合理的。先提出反例、风险和替代方案，再与用户对齐；但挑战必须服务于澄清需求和降低返工，不做无意义辩论。
-
-## Pre-Start Review Gate
-
-每个 build_task 在 Draft→Approved（开工）之前，必须过一轮结构化的对抗式复核。**过此门是 build_task 开工的唯一标志：未过门不得写代码。** 它不替代业务语义门 / 接口准入门 / Critical Review Gate，而是把它们串成一次针对已成形 plan（大任务另含 prd/issues）的开工前复核。`Critical Review Gate` 是本门内的一个视角，不是本门本身。
-
-### 谁来评审
-
-主agent亲自逐条核对，并且**必须指派至少一个独立只读子agent**做目标架构/目标效果零漂移复核；涉及auth/凭据/工具执行/secret/DB/冻结契约时，再按风险增加安全评审子agent。子agent只经`terai-build`+仓内docs/arch上手，不得修改文件或实现代码。每条“承重”结论仍必须由主agent回源码、命令输出、真实数据文件和arch权威核验后才写进结论，不能直接转述。
-
-### 评审清单（每条结论用 Fact / Inference / Recommendation 分层）
-
-1. **源头核对（不信任 plan 自述）**：plan 里每个外部契约、tool/action id、字段名、错误码、配置项/路径、RPC method、引用的数据值，逐条对当前源码、命令输出、真实数据文件（如 `commands.json`、skill 目录）、arch 配置（`modules.yml`、`.go-arch-lint.yml`、`glossary-lock`）核对。真实源头里不存在、或没有明确派生规则的 id/名称/形状 = Blocker。
-2. **slice 就绪与依赖正确**：每个 issue 是真正 ready-for-agent 的纵切、可独立验收（有具体测试接缝）；把每条“消费其它 slice 产物（prompt golden、catalog、schema 等）”的验收项与该 issue 的 Blocked-by 交叉核对，引用了后置/并行 slice 产物 = 依赖错误。
-3. **LLM-facing 归属与真实可证**：任何 provider/model/tool-call/prompt/SSE 行为都要由某 slice 拥有，且有真实 provider 可验证的验收点；只能用 fake 打勾、真实链路（多轮 transcript、后续轮次带工具、provider 方言回放等）仍未落地的 slice 是“假接缝” = Blocker。LLM 语义须在 Approved 前对齐，不留到 live smoke 才暴露。
-4. **secret/身份不泄露全链路**：把每个 secret、凭据、session 材料、Cookie/CSRF 端到端追每一跳（HTTP→解密→RPC→store→validator→executor/CLI→SSE/audit/log/model-feedback），每跳都要有显式负测；通道未定义（如凭据注入 env vs argv）或缺负测 = Blocker；并确认规范化前就发出的模型可见输出（如 tool args 进 SSE/audit）不会夹带用户贴入的 secret。
-5. **不变量守住**：唯一咽喉、身份后端注入、LLM SDK 仅 `internal/llm`、不引入 common/util/shared/全局 coordinator；对 plan 文本和隐含代码改动都查。
-6. **冻结契约覆盖**：HTTP/SSE/RPC/DB/config/audit/Swagger 改动有批准记录且完整定义；每个模型可见/前端可见的 result 形状与错误码先冻结，不留给实现期随手写的 golden 去定义。
-7. **dev/CI 运行依赖行为**：每个外部运行依赖（文件路径、daemon 地址、打包资源根）在 dev/CI 机器缺失时的行为要有定义（启动 fail-closed / 降级 / 调用时报错）并有 dev 默认值，不能只考虑目标设备。
-8. **顺序与 arch 登记时机**：安全/治理/审计/脱敏基线排在可执行/有副作用 slice 之前；新增包与依赖边在第一个 import 它的 slice 就同步进 `modules.yml` + `.go-arch-lint.yml` + `glossary-lock`，不拖到最后 docs slice。
-9. **内部一致性**：plan 各节、ADR、glossary、非目标之间不自相矛盾（如 Affected Scope 写了某能力但非目标又排除；声称行为与当前代码不符）。
-10. **产物完整**：任务目录有模板三件套（plan/progress/review），大任务另有 prd.md + issues.md；issue 引用的文件（如 progress.md/review.md）真实存在或由指定 slice 创建。
-11. **目标架构与目标效果零漂移**：独立子agent必须把plan/ADR/issues逐项映射到`docs/architecture.md`、当前Accepted ADR、`arch/modules.yml`、`arch/glossary-lock.txt`和用户批准的可观察效果，检查模块落点、职责、依赖方向、数据/控制流、唯一咽喉、扩展点和非目标是否合理。任何无法证明一致、可能污染目标架构、或只能靠实现期猜测才能成立的方案 = Blocker。
-
-### findings 分类与收敛标准（开工唯一标志）
-
-- 每条 finding 归类：**Blocker**（Approved 前必修）/ **Should-fix**（可延后，但需在 plan 显式记录）/ **Decision-needed**（只有用户能拍板的设计/取舍）。任何目标架构或目标效果漂移一律是Blocker，不能降级为Should-fix。
-- Approved 需同时满足：所有 Blocker 已在 plan/issues 修掉；所有 Decision-needed 已由用户拍板并写回 plan（可追溯到场景、目标语义、涉及文件、验收方式）；`Open Questions / Blockers` 一节清空；批准版质量门（无未确认的“建议/可能/暂定/后续看”当执行策略）成立。
-- 只有满足上述收敛，build_task 才能 Draft→Approved 并开工。评审结论与收敛过程记入该任务 `review.md`（并按需同步 Issue Decomposition Record / Approval Record）。
-
-## Review Gate
-
-每个build_task在声称实现完成、标记Done或进入最终合入前，必须对**实际实现**执行一次目标架构与目标效果零漂移评审。该门不复述Pre-Start plan评审，而是拿Approved plan/ADR/issues与真实diff、依赖图、测试、运行结果和docs逐项对照。
-
-### 谁来评审
-
-主agent必须亲自审查实际实现并回源码/命令验证。可指派独立只读子agent提供对抗性复核；涉及多模块、架构边界、冻结契约、安全、工具执行、LLM-facing或DB的build_task应指派。子agent只审查，不替主agent修代码或决定任务完成。
-
-### 必查项
-
-1. **目标效果零漂移**：真实用户场景、输入输出、错误、SSE/HTTP/RPC/DB/config/audit和非目标与Approved plan一致；测试名称通过但可观察行为不同仍算漂移。
-2. **目标架构零污染**：模块职责、依赖方向、唯一咽喉、身份注入、SDK边界、数据所有权和扩展点符合`docs/architecture.md`、Accepted ADR、`arch/modules.yml`与glossary；浅转发、重复事实源、catch-all/common/util、隐藏全局协调或越权旁路均视为架构污染。
-3. **实现与计划可追溯**：每个新增包、接口、类型、字段、事件、错误码和配置都能追溯到已批准方案；实现期临时发明但未补准入/命名/用户决策的内容 = Blocker。
-4. **证据充分**：contract/golden/characterization、`make ci`、真实provider或设备smoke（适用时）、安全负测和生成文档共同证明；只靠fake或只看diff不能通过。
-5. **权威同步**：实际事实同步到current-facts、ADR、arch/glossary、Swagger和build task review；不得让代码、plan、ADR和架构权威互相矛盾。
-
-### 收敛与用户权威决定
-
-- 任何目标架构或目标效果漂移都是Blocker：build_task保持未完成，修复后重新跑验证和Review Gate，直到零漂移。
-- 如果实现证据表明目标架构本身需要演进，agent不得自行豁免。必须向用户说明Fact、当前漂移、业务/架构影响、候选处理和Recommendation，由用户决定：继续修实现、批准架构演进并更新ADR/arch后再复审，或停止/Supersede任务。
-- 只有Blocker为零、用户Decision-needed全部解决、主agent确认实际实现与当前权威目标零漂移、`review.md`记录证据后，才能标记Done。用户拥有最终权威决定权，但不能在权威架构仍未更新时把已知漂移伪写成“零漂移通过”。
-
-## Recommendation Justification Gate
-
-每次给出建议、推荐方案、默认选择、优先级排序或要求用户拍板前，必须给出足够理由，不能只给结论：
-1. 先说明推荐服务的具体业务场景和成功标准；没有场景和标准，不得要求用户批准。
-2. 明确建议依据来自哪里：当前源码/文档事实、命令输出、用户确认、子 agent 调研、外部参考、还是 agent 推断；推断必须标明。
-3. 至少说明 2 个关键选择标准，例如风险、交付速度、可验证性、维护成本、用户价值、权限/安全边界、与 Terai 不变量的一致性。
-4. 说明被排除的主要替代方案以及排除理由；如果没有替代方案，也要说明为什么这是一个机械落地而不是设计选择。
-5. 明确该建议会扩大或收窄哪些范围，哪些风险仍然存在，后续如何用测试、smoke、review 或文档证明它成立。
-6. 对高风险、安全、架构、冻结契约、工具执行、凭据、DB、LLM-facing 行为的建议，必须给出 Fact / Inference / Recommendation 分层；不能把推荐包装成事实。
-
-如果理由不足，应先补充调研或解释，而不是推动用户做决断。用户指出“理由不充分 / 不信服 / 为什么这样选”时，本轮必须先补足论证，再继续推进设计。
-
-## Teaching And Learning Gap Hook
-
-- 默认把用户当作刚毕业的后端工程师，而不是专家；解释 Terai 架构、Go 接口、RPC/SSE/LLM/provider 等概念时，先讲业务场景和不做会怎样，再讲术语、接口和取舍。
-- 每次用户明确表示"不理解 / 没概念 / 需要深入解释"时，把它视为知识盲区信号；先在当前回答中讲清楚，再判断是否需要沉淀为项目 learning 记录、glossary 或 skill 规则。
-- 知识盲区沉淀不能自动改文件；若需要写入 `terai-build`、仓内 docs 或 learning 记录，先说明变动、原因、影响范围，得到用户确认后再执行并提交 commit。
-
-## Alignment Explanation Template
-
-对齐冻结契约、内部接口或新概念时，必须按用户能理解和拍板的顺序输出；不要先抛实现术语、字段表或代码形状。
-
-默认结构：
-1. **业务场景**：谁在什么情况下要做什么；不设计这个点会出现什么实际问题。
-2. **当前事实**：如果引用 `tafs`，明确标成 "`tafs` 当前事实"，只说明源码现在如何工作；不得把它直接说成 Terai 目标。
-3. **术语解释**：首次出现的英文名词或专有词必须就地解释，用中文说明它在这个场景里是什么。每轮尽量少引入新术语；必要时先停下来教学，不继续推进新方案。
-4. **领域层级（先建模，后决策）**：当同一个词可能指向不同层级，或议题涉及批次/成员、预算/计数、重试、状态、清零、所有权、并发或生命周期时，先给最小对象层级，再讨论规则。逐个说明对象的一句话定义、父子关系与基数、创建/完成边界；每个数值或状态必须明确统计对象、递增边界和清零边界。用当前用户场景完整翻译一次，例如“一个 A 包含 N 个 B，每个 B 最多产生一个 C”。简单单对象议题以对象定义作为最小模型，随后直接进入目标语义。
-5. **概念校验**：把用户原话映射到第3—4步的规范术语，请用户先核对“我理解的对象、层级和计数单位是否准确”；此时专注修正理解，方案选择放到第9步。完成标准是：每个易混词只有一个当前含义；每个数量规则都指向唯一统计对象；示例中的每个动作都能落到一个明确层级；用户确认该映射。达到这些条件后，才能进入数值、清零策略、错误码、字段名或方案A/B。
-6. **关系边界**：说明多个机制是同一问题、上下游关系，还是只出现在同一链路里的独立问题；把跨层规则明确落到其拥有者，并显式说明跨层决策的依据。
-7. **Terai 目标语义**：说明我们希望 Terai 在这个场景下表现成什么样，不做什么，哪些敏感信息不得传递或持久化。
-8. **候选契约**：最后再给 HTTP/SSE/RPC/config/audit/Go DTO 等候选形状，并标明是候选、已确认还是待调研。
-9. **拍板问题**：默认每次只收敛一个会影响实现或契约的决策；如果多个 open questions/blockers 互不依赖，可以一次性列出多个拍板问题并标清各自场景、候选契约和影响范围。用户拍板后立刻更新文档、校验、commit，然后在同一轮直接展开下一批对齐点，避免要求用户反复输入"确认/下一步"。如果问题之间存在"必须先回答 A 才能分析或选择 B"的关系，则不得批量推进。
-
-如果用户指出"看不懂 / 术语太多 / 关系不清"，回到第3—5步重新完成概念校验：指出此前混用了哪些对象或层级，把所有依赖该旧理解的未实施决策重新标成待确认或已被取代，并先同步当前执行性文档。概念校验重新通过后，再继续目标语义和候选方案。
-
-## Feedback Hook
-
-自动分析用户问题和反馈，提炼可复用偏好。只在用户确认后修改 skill 或项目规则；修改后运行轻量校验（如 `personal-agent-os/scripts/manage-skills.sh verify`、`git diff --check`、相关 docs/CI 检查）。
+- Default to Chinese prose; keep commands, paths, and identifiers in English. Explain scenario before terminology.
+- Use source, command, test, and repo-doc evidence. Mark Fact, Inference, and Recommendation separately for load-bearing decisions.
+- Obtain user approval before frozen HTTP/SSE/RPC/DB contracts, DB migrations, remote push, or internal landing changes.
+- Keep secrets, tokens, cookies, private keys, and real passwords out of files, logs, audit, prompts, and generated artifacts; inject live model configuration at runtime.
+- Stop when a user-owned decision is unanswered. Discoverable facts should be investigated first.
+- After validated file changes, create a focused structured commit without unrelated dirty files. Push still requires separate approval.
+- Subagents learning Terai use this skill plus `terai/docs` and `terai/arch`; use `terai-onboarding` only when the user explicitly requests `tafs` migration/reference analysis.

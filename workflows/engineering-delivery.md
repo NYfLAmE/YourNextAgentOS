@@ -7,9 +7,8 @@ This workflow handles new requirements, bugs, refactors, and project delivery.
 ```text
 intake
 -> plan
--> PRD
--> issues
--> triage
+-> spec
+-> tickets
 -> implementation
 -> review
 -> acceptance
@@ -74,13 +73,15 @@ The plan must include:
 
 The plan must be approved before Builder starts implementation unless the user explicitly requests a small direct edit.
 
-## PRD
+`triage` is an intake path for incoming external or raw requests, not a mandatory hop after ticket generation.
 
-Create a PRD when the work is larger than a direct fix.
+## Spec
 
-Use [PRD template](../templates/prd.md).
+Create a spec when the work is larger than a direct fix and the important decisions are already established. Use `/to-spec`; it synthesizes the conversation rather than reopening discovery.
 
-The PRD should capture:
+The existing [PRD template](../templates/prd.md) remains a compatibility template until its file name is migrated.
+
+The spec should capture:
 
 - problem statement
 - target user
@@ -90,15 +91,19 @@ The PRD should capture:
 - acceptance criteria
 - evidence and source references
 
-## Issues
+Do not mark a spec ready for implementation before the target project's approval gates pass.
 
-Break PRDs into vertical slices.
+## Tickets
 
-Use [Issue template](../templates/issue.md).
+Use `/to-tickets` to break a spec, plan, or confirmed conversation into tracer-bullet tickets.
 
-Prefer slices that deliver end-to-end behavior. Avoid splitting only by layers such as handler/service/model unless the task is a pure internal refactor.
+Use the existing [Issue template](../templates/issue.md) as the compatibility body shape when the configured tracker has no stronger native form.
+
+Each ticket should deliver end-to-end behavior, fit one fresh context, and declare every blocking edge. The open, unblocked tickets form the frontier. Avoid splitting only by layers such as handler/service/model unless the task is a wide mechanical refactor; use expand-contract for that exception.
 
 ## Triage
+
+Use triage for incoming issues, bug reports, enhancement requests, and external contributions that have not already been aligned and decomposed. Tickets produced by `/to-tickets` do not need a second triage pass; they become ready only when the target project's approval gate says so.
 
 Every issue should have:
 
@@ -116,7 +121,7 @@ Every issue should have:
 
 ## Implementation
 
-Builder executes only inside the approved issue or plan.
+Use `/implement` for one approved frontier ticket or one approved single-session plan. Pin the base commit before edits so review has a fixed point.
 
 Rules:
 
@@ -148,7 +153,7 @@ Merging a feature branch into the integration branch updates the shared Git ref.
 
 ## Review
 
-Reviewer checks:
+Use `/code-review` for independent Standards and Spec axes. Then run any project-specific architecture, effect, security, approval, or completion gate. Reviewer checks:
 
 - implementation matches plan
 - tests cover the acceptance criteria
@@ -195,8 +200,8 @@ For a fuzzy Terra requirement:
 
 1. Intake reads the Terra project adapter.
 2. Planner asks only non-discoverable requirement questions.
-3. PRD records the confirmed behavior and source facts.
-4. Issues are split by vertical slice.
-5. Triage marks only sufficiently specified slices as `ready-for-agent`.
-6. Builder implements after plan approval.
+3. The spec records the confirmed behavior and source facts.
+4. Tickets are split by vertical slice with blocking edges.
+5. The project approval gate marks only sufficiently specified frontier tickets as ready.
+6. `/implement` builds one approved ticket from a pinned base.
 7. Reviewer checks tests, docs, API/Swagger impacts, and Git hygiene.

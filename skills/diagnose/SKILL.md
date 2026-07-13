@@ -1,17 +1,17 @@
 ---
 name: diagnose
-description: Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when user says "diagnose this" / "debug this", reports a bug, says something is broken/throwing/failing, or describes a performance regression.
+description: Diagnosis loop for hard bugs and performance regressions. Use when the user says "diagnose"/"debug this", or reports something broken, throwing, failing, or slow.
 ---
 
 # Diagnose
 
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
-When exploring the codebase, use the project's domain glossary to get a clear mental model of the relevant modules, and check ADRs in the area you're touching.
+When exploring the codebase, read the project's domain glossary or `CONTEXT.md` if present, and check ADRs in the area you're touching.
 
 ## Phase 1 — Build a feedback loop
 
-**This is the skill.** Everything else is mechanical. If you have a fast, deterministic, agent-runnable pass/fail signal for the bug, you will find the cause — bisection, hypothesis-testing, and instrumentation all just consume that signal. If you don't have one, no amount of staring at code will save you.
+**This is the skill.** Everything else is mechanical. If you have a **tight** pass/fail signal that goes red on this bug, you will find the cause; bisection, hypothesis-testing, and instrumentation all just consume that signal. If you don't have one, no amount of staring at code will save you.
 
 Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give up.**
 
@@ -30,15 +30,15 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 
 Build the right feedback loop, and the bug is 90% fixed.
 
-### Iterate on the loop itself
+### Tighten the loop
 
-Treat the loop as a product. Once you have _a_ loop, ask:
+Treat the loop as a product. Once you have _a_ loop, tighten it:
 
 - Can I make it faster? (Cache setup, skip unrelated init, narrow the test scope.)
 - Can I make the signal sharper? (Assert on the specific symptom, not "didn't crash".)
 - Can I make it more deterministic? (Pin time, seed RNG, isolate filesystem, freeze network.)
 
-A 30-second flaky loop is barely better than no loop. A 2-second deterministic loop is a debugging superpower.
+A 30-second flaky loop is barely better than no loop; a 2-second deterministic one is tight — a debugging superpower.
 
 ### Non-deterministic bugs
 
@@ -48,11 +48,20 @@ The goal is not a clean repro but a **higher reproduction rate**. Loop the trigg
 
 Stop and say so explicitly. List what you tried. Ask the user for: (a) access to whatever environment reproduces it, (b) a captured artifact (HAR file, log dump, core dump, screen recording with timestamps), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
 
-Do not proceed to Phase 2 until you have a loop you believe in.
+### Completion criterion — a tight loop that goes red
 
-## Phase 2 — Reproduce
+Phase 1 is done when you can name one command that you have already run, paste its output, and show that it is:
 
-Run the loop. Watch the bug appear.
+- [ ] **Red-capable** — it drives the actual bug path and asserts the user's exact symptom.
+- [ ] **Deterministic** — it gives the same verdict every run, or a pinned high reproduction rate for a flaky bug.
+- [ ] **Fast** — seconds, not minutes.
+- [ ] **Agent-runnable** — unattended, with a human only through `scripts/hitl-loop.template.sh` when unavoidable.
+
+If you catch yourself building a theory before this command exists, return to the loop. No red-capable command, no Phase 2.
+
+## Phase 2 — Reproduce + minimise
+
+Run the loop. Watch it go red.
 
 Confirm:
 
@@ -60,7 +69,13 @@ Confirm:
 - [ ] The failure is reproducible across multiple runs (or, for non-deterministic bugs, reproducible at a high enough rate to debug against).
 - [ ] You have captured the exact symptom (error message, wrong output, slow timing) so later phases can verify the fix actually addresses it.
 
-Do not proceed until you reproduce the bug.
+### Minimise
+
+Shrink the reproduction to the smallest scenario that still goes red. Remove inputs, callers, config, data, and steps one at a time, re-running the loop after each cut.
+
+Done when every remaining element is load-bearing: removing any one makes the loop go green. This smaller surface narrows the hypothesis space and becomes the regression-test seed.
+
+Do not proceed until the bug is both reproduced and minimised.
 
 ## Phase 3 — Hypothesise
 
@@ -88,6 +103,13 @@ Tool preference:
 
 **Perf branch.** For performance regressions, logs are usually wrong. Instead: establish a baseline measurement (timing harness, `performance.now()`, profiler, query plan), then bisect. Measure first, fix second.
 
+## Authority gate — diagnosis is not implementation
+
+Once the probes identify the root cause, record the cause, evidence, remaining uncertainty, and the smallest recommended fix plus regression-test seam.
+
+- If the user asked only to diagnose, debug, explain, or report, remove temporary instrumentation and stop here. Report the evidence-backed diagnosis; do not add a regression test, modify production behavior, or commit a fix.
+- Continue to Phase 5 only when the user explicitly asked for a fix (or the active request otherwise clearly includes implementation) and every repository approval gate for that fix has passed.
+
 ## Phase 5 — Fix + regression test
 
 Write the regression test **before the fix** — but only if there is a **correct seam** for it.
@@ -114,4 +136,4 @@ Required before declaring done:
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
 - [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
 
-**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. Make the recommendation **after** the fix is in, not before — you have more information now than when you started.
+**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. When a fix was authorized, make this recommendation after the fix; in diagnosis-only mode, include it in the diagnosis without changing the codebase.

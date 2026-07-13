@@ -1,7 +1,6 @@
 ---
 name: setup-matt-pocock-skills
-description: Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
-disable-model-invocation: true
+description: Explicit-command workflow that configures a repo's issue tracker, triage vocabulary, and domain-doc layout. Use only when the user explicitly invokes setup-matt-pocock-skills and the repo lacks a project-specific authority.
 ---
 
 # Setup Matt Pocock's Skills
@@ -26,6 +25,10 @@ Look at the current repo to understand its starting state. Read whatever exists;
 - `docs/adr/` and any `src/*/docs/adr/` directories
 - `docs/agents/` — does this skill's prior output already exist?
 - `.scratch/` — sign that a local-markdown issue tracker convention is already in use
+- Existing project-specific task authorities such as `docs/build_tasks/`, `specs/`, or tracker instructions in `AGENTS.md`
+- Existing glossary/domain authorities that are not named `CONTEXT.md`
+
+If the repo already has an explicit task or domain authority, configure the skills to use it. Do not create `.scratch/`, `CONTEXT.md`, or another tree that would become a second source of truth.
 
 ### 2. Present findings and ask
 
@@ -35,7 +38,7 @@ Assume the user does not know what these terms mean. Each section starts with a 
 
 **Section A — Issue tracker.**
 
-> Explainer: The "issue tracker" is where issues live for this repo. Skills like `to-issues`, `triage`, `to-prd`, and `qa` read from and write to it — they need to know whether to call `gh issue create`, write a markdown file under `.scratch/`, or follow some other workflow you describe. Pick the place you actually track work for this repo.
+> Explainer: The "issue tracker" is where specs, tickets, and incoming requests live for this repo. Skills like `to-spec`, `to-tickets`, `wayfinder`, and `triage` need to know whether to call a tracker CLI, write local files, or follow an existing project workflow.
 
 Default posture: these skills were designed for GitHub. If a `git remote` points at GitHub, propose that. If a `git remote` points at GitLab (`gitlab.com` or a self-hosted host), propose GitLab. Otherwise (or if the user prefers), offer:
 
@@ -62,10 +65,11 @@ Default: each role's string equals its name. Ask the user if they want to overri
 
 > Explainer: Some skills (`improve-codebase-architecture`, `diagnose`, `tdd`) read a `CONTEXT.md` file to learn the project's domain language, and `docs/adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
 
-Confirm the layout:
+Confirm the existing layout rather than forcing a new one:
 
 - **Single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. Most repos are this.
 - **Multi-context** — `CONTEXT-MAP.md` at the root pointing to per-context `CONTEXT.md` files (typically a monorepo).
+- **Project-specific** — existing glossary, architecture, ADR, and task docs recorded as the authority without creating `CONTEXT.md`.
 
 ### 3. Confirm and edit
 
@@ -103,7 +107,7 @@ The block:
 
 ### Domain docs
 
-[one-line summary of layout — "single-context" or "multi-context"]. See `docs/agents/domain.md`.
+[one-line summary of the existing domain-doc authority]. See `docs/agents/domain.md`.
 ```
 
 Then write the three docs files using the seed templates in this skill folder as a starting point:
@@ -115,6 +119,8 @@ Then write the three docs files using the seed templates in this skill folder as
 - [domain.md](./domain.md) — domain doc consumer rules + layout
 
 For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
+
+For a project-specific domain layout, write `docs/agents/domain.md` from the discovered authority rather than forcing the single/multi-context seed.
 
 ### 5. Done
 

@@ -1,6 +1,6 @@
 ---
 name: wayfinder
-description: Plan a huge chunk of work — more than one agent session can hold — as a shared map of investigation tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear.
+description: Explicit-command workflow that maps a huge, foggy effort into decision tickets spanning multiple sessions. Use only when the user explicitly invokes wayfinder.
 ---
 
 A loose idea has arrived — too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet. Wayfinding is about finding that way, not charging at the destination. This skill charts the way as a **shared map** on the repo's issue tracker, then works its tickets one at a time until the route is clear.
@@ -21,7 +21,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
-**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Consult `docs/agents/issue-tracker.md` (the "Wayfinding operations" section) for how _this_ repo expresses them. If that doc is absent, default to the local-markdown tracker.
+**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Use the tracker or project-specific task authority named by repository instructions. Run `/setup-matt-pocock-skills` only when no authority exists; do not introduce a second tracker tree. Consult its wayfinding operations and default to local Markdown only for an otherwise unconfigured repo.
 
 ### The map body
 
