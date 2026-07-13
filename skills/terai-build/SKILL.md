@@ -62,7 +62,7 @@ Before any formal recommendation, alignment decision, build-task Draft→Approve
 
 ## Invariants
 
-- Model tool calls pass through `run → governance → dispatch`; no domain tool surface bypasses the chokepoint.
+- Provider adapters only parse and validate model tool structure. During a Run Attempt, `run` owns the handling and terminal outcome of every legal model tool-call request, and no domain tool surface may bypass it. An actual model-triggered tool execution attempt may begin through `tool.Registry.Execute` only after `governance` explicitly allows it; prepare errors, governance denials, sibling skips, and execution-budget limits may terminate before execution.
 - Execution identity is injected by the authenticated backend.
 - LLM SDK imports stay in `internal/llm`.
 - Do not introduce Shared Kernel, `common`, `util`, or a global coordinator.
