@@ -11,8 +11,8 @@ Act as the thin Terai router. Project facts live in `terai/docs/` and `terai/arc
 
 ## Quick start
 
-1. Default repo: `{YJDEV}/terai` (`{YJDEV}` is the workspace root). Use it as the working directory; every relative path below is repo-root-relative.
-2. Before code or project-file changes, read `AGENTS.md`.
+1. Intake checkout: `{YJDEV}/terai` (`{YJDEV}` is the workspace root). Treat all of its working-tree contents—tracked, untracked, and ignored—as read-only and use the repository only as the intake/worktree-routing anchor, never as a task workspace. Apply the Worktree Intake Gate below; afterward, use the selected worktree as the repo root for every relative path.
+2. Before any Terai project-file change, select the task worktree and read its `AGENTS.md`.
 3. Read the task-relevant authority in this order:
    - `docs/architecture.md` — target architecture and invariants.
    - `docs/workflow.md` — T0–T3 delivery, build brief, approval, DoD, and HITL.
@@ -24,11 +24,25 @@ Act as the thin Terai router. Project facts live in `terai/docs/` and `terai/arc
 
 ## Fact priority
 
-Current user instruction > current `terai` source/command output/tests > current Accepted ADR and repo docs/arch > `tafs_sidebar/` > older context. `tafs` is a reference mirror for Host Kernel behavior, not the target authority for the greenfield AI layer.
+Current user instruction > current selected-worktree source/command output/tests > current Accepted ADR and repo docs/arch > `tafs_sidebar/` > older context. `tafs` is a reference mirror for Host Kernel behavior, not the target authority for the greenfield AI layer.
+
+## Worktree Intake Gate
+
+Apply this as the first mutating gate for every incoming Terai requirement or bug, regardless of T0–T3. Read-only intake may inspect enough state to route ownership; before task-specific research, alignment, diagnosis, validation, project-file mutation, or commit:
+
+1. During classification, inspect whatever read-only state is necessary to route ownership, including worktree/ref/status state, active Backlog/build-task authorities, relevant existing-worktree diff/log/source/test files, `git worktree list --porcelain`, and the committed local `refs/heads/main`. Creating the selected branch/worktree metadata is the only routing mutation authorized by this gate; do not create, modify, or delete any tracked, untracked, or ignored working-tree file in the intake checkout.
+2. Reuse an existing dedicated worktree when the request extends, corrects, or supersedes the same active effort; changes the same unlanded decision or contract; or cannot be implemented and validated without that worktree's unlanded changes. The same module, file, or broad topic alone does not establish dependency.
+3. Before reuse, confirm its branch, active task authority, current writer, and dirty state. Preserve task-owned changes and do not introduce an uncoordinated second writer.
+4. Otherwise create a unique task branch and worktree from the committed local `refs/heads/main` resolved at creation time, capture the base SHA, report the branch/path/base, and switch the working directory before continuing. Neither `origin/main` nor uncommitted main-checkout contents are implicit parts of this base; fetch, pull, rebase, or merge still require their normal authorization.
+5. Perform all subsequent task-specific work in the selected worktree, including persisted research, Pre-Build Alignment/checkpoints, diagnosis, implementation, tests, review, docs, validation, and focused commits. A purely read-only factual request may remain in the intake checkout.
+6. Never stash, reset, move, copy, commit, or absorb user-owned dirty work from the main checkout while routing. Unrelated dirty work does not block a worktree based on committed `main`; related dirty work requires an explicit ownership/migration decision before continuing.
+7. If dependency mapping is ambiguous, spans multiple active worktrees, or ownership cannot be coordinated safely, stop before mutation and ask the user to choose the owning effort.
+
+This gate selects an isolated task workspace; it does not authorize implementation or bypass delivery/HITL gates. It settles only initial routing and basic writer exclusion, superseding the creation-timing, T0/T1 coverage, and reuse-vs-create questions in `docs/backlog/parallel-build-worktrees.md`; formal ownership tracking, branch/path naming, later base synchronization, T3 decomposition, landing, abandonment, and cleanup remain unresolved.
 
 ## Route selection
 
-Skills whose descriptions mark them as explicit-command workflows are user entrypoints: recommend them when useful, but never silently invoke them from this skill. A normal “develop Terai” request still follows the same discipline directly through `terai-build`.
+Skills whose descriptions mark them as explicit-command workflows are user entrypoints: recommend them when useful, but never silently invoke them from this skill. Every incoming requirement or bug passes the Worktree Intake Gate before the applicable route below; a normal “develop Terai” request still follows the same discipline directly through `terai-build`.
 
 | Situation | Route | Terai result |
 | --- | --- | --- |
@@ -50,7 +64,7 @@ Skills whose descriptions mark them as explicit-command workflows are user entry
 2. **One task authority.** Terai keeps plans and work records in `docs/build_tasks/<task>/`. For T3, `to-spec` semantics produce the required existing `prd.md`; the epic is split into multiple build tasks. Only multi-party collaboration activates `to-tickets` semantics and the existing `issues.md`. Do not create a second tracker tree.
 3. **Draft before ready.** A generated spec or ticket is Draft. Only the parent build task passing Pre-Start Review, clearing Blockers and Decision-needed findings, can make a slice ready for implementation.
 4. **Plan remains the contract.** Specs and tickets decompose confirmed work; they never replace the approved `plan.md`, ADR, frozen contracts, or architecture authority.
-5. **One frontier slice at a time.** `implement` may start only from an Approved task and a fixed base commit. It must preserve unrelated dirty work, use pre-agreed seams, run `make ci` and applicable real-provider/device smoke, sync docs, pass the Terai Review Gate, then commit.
+5. **One frontier slice per task worktree at a time.** `implement` may start only from an Approved task and a fixed base commit. It must preserve unrelated dirty work, use pre-agreed seams, run `make ci` and applicable real-provider/device smoke, sync docs, pass the Terai Review Gate, then commit. Independent task worktrees may advance in parallel.
 6. **Review has additional axes.** Generic `code-review` supplies Standards and Spec. Terai additionally checks Architecture/Effect; auth, secret, DB, tool execution, frozen contracts, or LLM-facing work also gets the appropriate security/evidence review.
 7. **Use Terai language stores.** `domain-modeling` writes resolved terms to `docs/glossary.md`, architecture identifiers to `arch/glossary-lock.txt`, and durable trade-offs to `docs/adr/` only after the naming and approval gates. Do not create a generic `CONTEXT.md`.
 8. **Persist and bound research.** Write every Terai research document under the repo-owned `docs/research/` directory, never `/tmp`; reserve `/tmp` for disposable search, extraction, and prototype intermediates only. Research must record source versions and separate Fact/Inference/Recommendation. Prototypes use no real secrets or production side effects and cannot prove production readiness.
@@ -76,5 +90,5 @@ Before any formal recommendation, alignment decision, build-task Draft→Approve
 - Obtain user approval before frozen HTTP/SSE/RPC/DB contracts, DB migrations, remote push, or internal landing changes.
 - Keep secrets, tokens, cookies, private keys, and real passwords out of files, logs, audit, prompts, and generated artifacts; inject live model configuration at runtime.
 - Stop when a user-owned decision is unanswered. Discoverable facts should be investigated first.
-- After validated file changes, create a focused structured commit without unrelated dirty files. Push still requires separate approval.
-- Subagents learning Terai use this skill plus `terai/docs` and `terai/arch`; use `terai-onboarding` only when the user explicitly requests `tafs` migration/reference analysis.
+- After validated file changes, create a focused structured commit in the selected task worktree without unrelated dirty files. Push still requires separate approval.
+- After routing, give every Terai subagent the selected worktree path; never let it assume the shared intake checkout. A read-only intake subagent may use the intake path only to help classify ownership. Subagents learn Terai from this skill plus the selected worktree's `docs` and `arch`; use `terai-onboarding` only when the user explicitly requests `tafs` migration/reference analysis.
