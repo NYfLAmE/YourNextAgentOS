@@ -17,6 +17,7 @@ Act as the thin Terai router. Project facts live in `terai/docs/` and `terai/arc
    - `docs/architecture.md` — target architecture and invariants.
    - `docs/workflow.md` — T0–T3 delivery, build brief, approval, DoD, and HITL.
    - `docs/current-facts.md` — current implementation facts.
+   - `docs/backlog/` — pre-build alignment records and future capability state.
    - `arch/modules.yml` and `arch/glossary-lock.txt` — module/dependency and naming authorities.
    - `docs/build_tasks/` — approved plans, progress, evidence, and reviews.
    - `docs/glossary.md` — project vocabulary.
@@ -32,7 +33,7 @@ Skills whose descriptions mark them as explicit-command workflows are user entry
 | Situation | Route | Terai result |
 | --- | --- | --- |
 | Read, explain, or locate current behavior | `terai-build` only | Rebuild facts from repo authority; no mutation. |
-| Fuzzy requirement or naming/contract decision | Apply the alignment gates; suggest `/grill-with-docs` when the user wants a dedicated session | Decisions land before a build brief; independent questions may be batched. |
+| Fuzzy requirement or naming/contract decision | Apply the alignment gates; create or reuse the sole pre-build alignment record; suggest `/grill-with-docs` when the user wants a dedicated session | Complete an Alignment Checkpoint after every user-confirmed point before advancing to the next dependent question. |
 | Huge effort whose route is still obscured by fog | Continue alignment/research; mention `/wayfinder` only with its Terai limitation | Do not persist a map until the user approves how parent/child investigations map to Terai's existing authority. Do not disguise implementation as wayfinding. |
 | T3 work whose destination is already clear | Apply `to-spec` semantics to the mandatory PRD; suggest `/to-spec` as the explicit packaging command | Split the epic into multiple build tasks. Apply `to-tickets` semantics and suggest `/to-tickets` only when multi-party collaboration requires `issues.md`. |
 | Approved build task or frontier ticket | Suggest `/implement` | Implement one approved slice with `tdd`, validation, docs sync, review, and commit. |
@@ -71,6 +72,7 @@ Before any formal recommendation, alignment decision, build-task Draft→Approve
 
 - Default to Chinese prose; keep commands, paths, and identifiers in English. Explain scenario before terminology.
 - Use source, command, test, and repo-doc evidence. Mark Fact, Inference, and Recommendation separately for load-bearing decisions.
+- For an effort that `docs/workflow.md` routes through Pre-Build Alignment, keep its sole active decision state in `docs/backlog/<slug>.md` before a Draft build task exists. After every user-confirmed alignment point, complete an Alignment Checkpoint before asking the next dependent question: update confirmed/open/superseded state, validate, and create a focused commit. When the user authorizes a build brief, let Draft `plan.md` atomically take over and reduce the Backlog entry to a promotion pointer. Follow the current detailed lifecycle in `docs/workflow.md` and `docs/backlog/README.md`; do not add this ceremony to T0/T1 work that the workflow does not route here.
 - Obtain user approval before frozen HTTP/SSE/RPC/DB contracts, DB migrations, remote push, or internal landing changes.
 - Keep secrets, tokens, cookies, private keys, and real passwords out of files, logs, audit, prompts, and generated artifacts; inject live model configuration at runtime.
 - Stop when a user-owned decision is unanswered. Discoverable facts should be investigated first.
