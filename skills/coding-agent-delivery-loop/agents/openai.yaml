@@ -1,0 +1,6 @@
+interface:
+  display_name: "Coding Agent Delivery Loop"
+  short_description: "Advance Approved tasks across coding agents"
+  default_prompt: "Use $coding-agent-delivery-loop."
+policy:
+  allow_implicit_invocation: false
